@@ -1,0 +1,83 @@
+{
+  "name": "zero-range-wave-compression",
+  "version": "5.0.0",
+  "description": "Zero Range Wave (ZRW) v5 — integer compressor that beats gzip/brotli on zeros/ramps/walks. Library + HTTP API + MCP. Free Gate (25 seats) · Starting Gate $79 · Pro Starter $249 · l33t Unlimited $699.",
+  "type": "module",
+  "main": "index.mjs",
+  "exports": {
+    ".": "./index.mjs",
+    "./license": "./license.mjs",
+    "./server": "./server.mjs",
+    "./mcp": "./mcp-server.mjs"
+  },
+  "bin": {
+    "zrw-api": "./bin/zrw-api.mjs",
+    "zrw-mcp": "./bin/zrw-mcp.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "index.min.mjs",
+    "license.mjs",
+    "server.mjs",
+    "mcp-server.mjs",
+    "bin",
+    "README.md",
+    "PRICING.md",
+    "API.md",
+    "FREE_KEYS.md",
+    "pricing-links.json",
+    "seo.html",
+    "seo.json",
+    "logos",
+    "scripts"
+  ],
+  "scripts": {
+    "test": "node --input-type=module -e \"import {compress,decompress,setLicenseKey} from './index.mjs'; setLicenseKey('ZRW-FREE-SELFTEST01'); const a=[0,0,1,2,3]; const p=compress(a); const b=decompress(p); if(b.join()!=a.join()) process.exit(1); console.log('ok', p.length);\"",
+    "bench": "node index.mjs",
+    "api": "node server.mjs",
+    "mcp": "node mcp-server.mjs",
+    "issue-free": "node scripts/issue-free-key.mjs"
+  },
+  "keywords": [
+    "compression",
+    "integers",
+    "zero-range-wave",
+    "zrw",
+    "fibonacci",
+    "rice",
+    "run-length",
+    "beats-gzip",
+    "beats-brotli",
+    "api",
+    "mcp",
+    "livestream",
+    "zerorangewave"
+  ],
+  "author": "ZeroRangeWave / Corey Tasz",
+  "license": "SEE LICENSE IN PRICING.md",
+  "homepage": "https://slidphilabs.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ceedot-rock/zero-range-wave-compression.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ceedot-rock/zero-range-wave-compression/issues"
+  },
+  "funding": [
+    {
+      "type": "Starting Gate $79",
+      "url": "https://buy.stripe.com/28EfZic3z69i3P72Wc6wE0b"
+    },
+    {
+      "type": "Pro Starter $249",
+      "url": "https://buy.stripe.com/cNidRaebHbtC71j8gw6wE0c"
+    },
+    {
+      "type": "l33t Unlimited $699",
+      "url": "https://buy.stripe.com/14AeVe9Vr8hqadvbsI6wE0d"
+    }
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

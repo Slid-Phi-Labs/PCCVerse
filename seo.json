@@ -1,0 +1,19 @@
+{
+  "title": "Zero Range Wave Compression - ZRW | 8B for 1k zeros, beats brotli & gzip",
+  "description": "Zero Range Wave Compression (ZRW) v5 - record-breaking integer compressor. 8 bytes for 1000 zeros (beats brotli 13B), 8 bytes for ramp 1k (141x vs brotli), 128B for 10k walk (40x vs gzip). Run-length wave encoding with Fib+Rice.",
+  "keywords": "zero range wave compression, ZRW, integer compression, run-length, fibonacci coding, rice coding, beats brotli, beats gzip",
+  "og:title": "Zero Range Wave Compression - ZRW",
+  "og:description": "8B for 1k zeros. 141x smaller than brotli on ramps. 40x smaller than gzip on walks. The final piece.",
+  "og:image": "zrw_logo_final.png",
+  "og:type": "website",
+  "twitter:card": "summary_large_image",
+  "twitter:title": "Zero Range Wave Compression",
+  "twitter:description": "Zero Range Wave Compression - breaking records: 8B for 1k zeros/ramp, beats brotli & gzip",
+  "theme_color": "#00CED1",
+  "colors": {
+    "teal": "#00D1D1",
+    "yellow": "#FFEB00",
+    "red": "#FF1E3C",
+    "orange": "#FF7A00"
+  }
+}
