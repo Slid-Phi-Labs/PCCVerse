@@ -20,14 +20,12 @@ Full encode/decode round-trip. Library + HTTP API + MCP server.
 ## Install
 
 ```bash
-# works today (GitHub)
-npm i github:ceedot-rock/zero-range-wave-compression
-
-# when registry publish is live
 npm i zero-range-wave-compression
 ```
 
-Node ≥ 18. ESM only.
+[npm package](https://www.npmjs.com/package/zero-range-wave-compression) · Node ≥ 18 · ESM only.
+
+Git install (optional): `npm i github:ceedot-rock/zero-range-wave-compression`
 
 ## Quick start
 
