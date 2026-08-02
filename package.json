@@ -1,7 +1,7 @@
 {
   "name": "zero-range-wave-compression",
   "version": "5.0.1",
-  "description": "Zero Range Wave (ZRW) v5 — pure-JS integer compressor that beats gzip and brotli on zeros, ramps and walks. Record ratios on repetitive and smooth sequences. Library + HTTP API + MCP. Free Gate · Starting Gate $79 · Pro $249 · l33t $699.",
+  "description": "Zero Range Wave (ZRW) v5 \u2014 pure-JS integer compressor that beats gzip and brotli on zeros, ramps and walks. Record ratios on repetitive and smooth sequences. Library + HTTP API + MCP.",
   "type": "module",
   "main": "index.mjs",
   "exports": {
@@ -54,11 +54,7 @@
     "ramp-compression",
     "walk-compression",
     "nodejs",
-    "mcp",
-    "api",
-    "livestream",
-    "zerorangewave",
-    "slidphilabs"
+    "mcp"
   ],
   "author": "ZeroRangeWave / Corey Tasz",
   "license": "SEE LICENSE IN PRICING.md",

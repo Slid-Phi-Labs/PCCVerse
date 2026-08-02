@@ -1,5 +1,9 @@
 # Zero Range Wave Compression (ZRW) v5
 
+[![site](https://img.shields.io/badge/site-slidphilabs.vercel.app-blue)](https://slidphilabs.vercel.app)
+[![GitHub](https://img.shields.io/badge/github-ceedot--rock%2Fzero--range--wave--compression-black)](https://github.com/ceedot-rock/zero-range-wave-compression)
+[![version](https://img.shields.io/badge/version-5.0.1-teal)](https://github.com/ceedot-rock/zero-range-wave-compression/releases)
+
 **Pure-JavaScript integer compressor that beats gzip and brotli on zeros, ramps, and walks.**
 
 Zero Range Wave is a specialized lossless codec for integer sequences. It is designed for sensor data, counters, scores, time-series deltas, and any stream that contains long runs, smooth ramps, or small random walks. On those patterns it routinely produces dramatically smaller output than general-purpose compressors.
@@ -16,6 +20,10 @@ Full encode/decode round-trip. Library + HTTP API + MCP server.
 ## Install
 
 ```bash
+# works today (GitHub)
+npm i github:ceedot-rock/zero-range-wave-compression
+
+# when registry publish is live
 npm i zero-range-wave-compression
 ```
 
@@ -73,6 +81,7 @@ Same license key works for all three.
 | [shard-zip](https://www.npmjs.com/package/shard-zip) | Adaptive Fibonacci + Blackjack V2 |
 | [slid-phi](https://www.npmjs.com/package/slid-phi) | Omni-Dormant integer codecs |
 | [shard-tsdb](https://www.npmjs.com/package/shard-tsdb) | Time-series DB using this family |
+| [CuNi Studio](https://cuni-studio.fly.dev/) | Exact multi-target code playground |
 
 Site: [slidphilabs.vercel.app](https://slidphilabs.vercel.app)
 
