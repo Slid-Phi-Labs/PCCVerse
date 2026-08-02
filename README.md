@@ -1,60 +1,81 @@
-# Zero Range Wave Compression v5
+# Zero Range Wave Compression (ZRW) v5
 
-Record-breaking integer sequence compressor.
+**Pure-JavaScript integer compressor that beats gzip and brotli on zeros, ramps, and walks.**
 
-## Records
-- zeros_1k: 8B vs brotli 13B vs gzip 39B vs old v4 130B
-- ramp_1k: 8B vs brotli 1132B vs gzip 1436B (141x win)
-- walk_10k s1: 128B vs old v4 2500B vs gzip 5223B (40x win)
-- walk_10k s5: 420B vs old v4 7163B vs gzip 11231B (26x win)
+Zero Range Wave is a specialized lossless codec for integer sequences. It is designed for sensor data, counters, scores, time-series deltas, and any stream that contains long runs, smooth ramps, or small random walks. On those patterns it routinely produces dramatically smaller output than general-purpose compressors.
 
-## Core innovation
-- Single-op codes: repeat=0, inc=10, dec=110, d2=1110, rice=11110, normal=111110 (prefix-free, no regression)
-- Run escape: 1111110 + 2-bit type (00=repeat,01=inc,10=dec,11=d2) + Fib(cnt)
-- Threshold=4: use run-length only when run >=4, else per-element (preserves walk performance)
-- Fib + Omega for ints: Fib for <=10000, Omega escape 11111110 for large
+| Input | ZRW packed | vs brotli | vs gzip | Win |
+|-------|------------|----------|---------|-----|
+| zeros × 1 000 | **8 B** | 13 B | 39 B | clear win |
+| ramp × 1 000 | **8 B** | 1 132 B | 1 436 B | **~141×** |
+| walk 10k (step 1) | **128 B** | — | ~5 223 B | **~40×** |
+| walk 10k (step 5) | **420 B** | — | ~11 231 B | **~26×** |
 
+Full encode/decode round-trip. Library + HTTP API + MCP server.
 
-## Pricing
+## Install
 
-| Tier | Price | Ops/mo | Max ints/call | Livestream |
-|------|------:|--------|---------------|------------|
-| **Free Gate** (25 seats only) | $0 | 100k | 10k | No |
-| **Starting Gate** | **$79** | 5M | 100k | No |
-| **Pro Starter** (mid-road) | **$249** | 50M | 1M | Yes |
+```bash
+npm i zero-range-wave-compression
+```
+
+Node ≥ 18. ESM only.
+
+## Quick start
+
+```js
+import { compress, decompress, setLicenseKey } from "zero-range-wave-compression";
+
+// Free Gate or paid key
+setLicenseKey(process.env.ZRW_LICENSE); // ZRW-FREE-… / ZRW-START-… / ZRW-PRO-… / ZRW-L33T-…
+
+const packed = compress([0, 0, 0, 1, 2, 3, 4, 5]); // Uint8Array
+const back = decompress(packed);                   // exact round-trip
+```
+
+## Why it wins on these patterns
+
+- Single-op prefix-free codes for the common cases (repeat, ±1, second difference, Rice, fallback)
+- Run-length escape only when a run is long enough (threshold = 4) so short walks stay fast
+- Fibonacci coding for small integers, Elias ω escape for large values
+- No dictionary warmup cost — excellent on short and medium sequences
+
+## Pricing (one-time license)
+
+| Tier | Price | Ops / month | Max ints / call | Livestream |
+|------|------:|-------------|-----------------|------------|
+| **Free Gate** (25 seats) | $0 | 100 k | 10 k | No |
+| **Starting Gate** | **$79** | 5 M | 100 k | No |
+| **Pro Starter** | **$249** | 50 M | 1 M | Yes |
 | **l33t Unlimited** | **$699** | Unlimited | Unlimited | Yes |
 
-- Starting Gate: https://buy.stripe.com/28EfZic3z69i3P72Wc6wE0b
-- Pro Starter: https://buy.stripe.com/cNidRaebHbtC71j8gw6wE0c
-- l33t Unlimited: https://buy.stripe.com/14AeVe9Vr8hqadvbsI6wE0d
+- [Starting Gate](https://buy.stripe.com/28EfZic3z69i3P72Wc6wE0b)
+- [Pro Starter](https://buy.stripe.com/cNidRaebHbtC71j8gw6wE0c)
+- [l33t Unlimited](https://buy.stripe.com/14AeVe9Vr8hqadvbsI6wE0d)
 
-Full limits & free-key process: **[PRICING.md](./PRICING.md)** · Free keys: **[FREE_KEYS.md](./FREE_KEYS.md)**
+Details: [PRICING.md](./PRICING.md) · Free key process: [FREE_KEYS.md](./FREE_KEYS.md)
 
-```js
-import { setLicenseKey, assertLicense } from './license.mjs'
-setLicenseKey(process.env.ZRW_LICENSE) // ZRW-FREE-… / ZRW-PRO-… / ZRW-L33T-…
-assertLicense({ n: arr.length, livestream: false })
-```
+## Surfaces
 
-## API
-```js
-import { compress, decompress } from './index.mjs'
-const packed = compress([0,0,0,1,2,3,...]) // Uint8Array
-const arr = decompress(packed) // exact roundtrip
-```
-
-## Bench
-See bench_vs_others.mjs for gzip/brotli comparison.
-
-Built from blackjack-compression v4 -> v4.1-fast (5-28x speedup) -> v5 Zero Range Wave (beats brotli on zeros).
-
-## Library · API · MCP
-
-| Surface | Command |
-|---------|---------|
+| Surface | How |
+|---------|-----|
 | Library | `import { compress, decompress } from "zero-range-wave-compression"` |
-| HTTP API | `zrw-api` or `node server.mjs` → see [API.md](./API.md) |
-| MCP | `zrw-mcp` or `node mcp-server.mjs` |
+| HTTP API | `npx zrw-api` or `node server.mjs` → [API.md](./API.md) |
+| MCP | `npx zrw-mcp` or `node mcp-server.mjs` |
 
-Stripe tiers apply to **all three** (same license key).
+Same license key works for all three.
 
+## Related packages (SlidPhiLabs)
+
+| Package | Role |
+|---------|------|
+| [blackjack-compression](https://www.npmjs.com/package/blackjack-compression) | General-purpose pure-JS compressor (Fib / Rice / ω / LZ77) |
+| [shard-zip](https://www.npmjs.com/package/shard-zip) | Adaptive Fibonacci + Blackjack V2 |
+| [slid-phi](https://www.npmjs.com/package/slid-phi) | Omni-Dormant integer codecs |
+| [shard-tsdb](https://www.npmjs.com/package/shard-tsdb) | Time-series DB using this family |
+
+Site: [slidphilabs.vercel.app](https://slidphilabs.vercel.app)
+
+## License
+
+Commercial license (see PRICING.md). Free Gate limited to 25 evaluation seats.
