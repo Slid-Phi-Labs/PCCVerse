@@ -5,9 +5,16 @@
   "type": "module",
   "main": "index.js",
   "exports": { ".": "./index.js" },
-  "files": ["index.js", "README.md", "LICENSE", "PRICING.md"],
+  "files": ["index.js", "README.md", "PRICING.md"],
+  "scripts": {
+    "test": "node -e \"import('./index.js').then(() => console.log('stub ok'))\""
+  },
   "keywords": ["slidphilabs", "zrw", "proprietary", "stub"],
   "author": "SlidPhiLabs",
   "license": "SEE LICENSE IN PRICING.md",
-  "homepage": "https://slidphilabs.vercel.app/access"
+  "homepage": "https://slidphilabs.vercel.app/access",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ceedot-rock/zero-range-wave-compression.git"
+  }
 }

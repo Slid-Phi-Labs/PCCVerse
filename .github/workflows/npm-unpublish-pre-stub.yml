@@ -10,12 +10,12 @@ jobs:
     if: github.event.inputs.confirm == 'UNPUBLISH'
     runs-on: ubuntu-latest
     steps:
-      - name: Unpublish pre-stub ZRW versions
+      - name: Unpublish full-source 5.0.1 (keep stub 5.1.0+)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo '//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}' > ~/.npmrc
-          # Keep latest stub if published; remove full-source versions
-          npm unpublish zero-range-wave-compression@5.0.1 --force || true
-          npm unpublish zero-range-wave-compression@5.0.0 --force || true
           npm view zero-range-wave-compression versions --json || true
+          npm unpublish zero-range-wave-compression@5.0.1 --force || true
+          npm view zero-range-wave-compression versions --json || true
+          npm view zero-range-wave-compression version description || true
