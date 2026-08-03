@@ -16,7 +16,7 @@ Benchmarks (this pack, lossless RT) justify specialty-SDK pricing — not commod
 | walk × 10k (s5) | **420 B** | — | ~11231 B (**~26×**) |
 
 Peers that ship “destroy the baseline” numbers (specialized codecs / analytics SDKs) usually sit **$50–$700** one-time or annual — not $5 freemium.  
-We price **below enterprise codec licenses**, **above** SlidPhi donate ($29.99), aligned with Support-class tools ($199–$699).
+We price **below enterprise codec licenses**, **above** Slid Phi Labs donate ($29.99), aligned with Support-class tools ($199–$699).
 
 ---
 
@@ -126,9 +126,9 @@ Optional later: annual support renewal (~40% of tier) without re-buying the lice
 
 ---
 
-## Related (SlidPhi / cptasz13 — different brand)
+## Related (Slid Phi Labs / cptasz13 — different brand)
 
-- Donate SlidPhiLabs $29.99: https://buy.stripe.com/eVq9AUd7D0OY0CVdAQ6wE0a  
+- Donate Slid Phi Labs $29.99: https://buy.stripe.com/eVq9AUd7D0OY0CVdAQ6wE0a  
 - Support $199: https://buy.stripe.com/7sYbJ27NjfJSbhz8gw6wE09  
 
-ZRW is **zerorangewave** commercial packaging; SlidPhi remains MIT OSS with separate donate/support.
+ZRW is **zerorangewave** commercial packaging; Slid Phi Labs remains MIT OSS with separate donate/support.

@@ -1,18 +1,29 @@
 {
   "name": "zero-range-wave-compression",
-  "version": "5.1.0",
-  "description": "STUB — ZRW by SlidPhiLabs. Real package after purchase or Try Gate. https://slidphilabs.vercel.app/access",
+  "version": "5.0.2",
+  "description": "Zero Range Wave (ZRW) v5 \u2014 Slid Phi Labs pure-JS integer compressor that beats gzip and brotli on zeros, ramps and walks. Library + HTTP API + MCP.",
   "type": "module",
   "main": "index.js",
-  "exports": { ".": "./index.js" },
-  "files": ["index.js", "README.md", "PRICING.md"],
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "README.md",
+    "PRICING.md"
+  ],
   "scripts": {
     "test": "node -e \"import('./index.js').then(() => console.log('stub ok'))\""
   },
-  "keywords": ["slidphilabs", "zrw", "proprietary", "stub"],
-  "author": "SlidPhiLabs",
+  "keywords": [
+    "slid phi labs",
+    "zrw",
+    "proprietary",
+    "stub"
+  ],
+  "author": "Slid Phi Labs / ZeroRangeWave",
   "license": "SEE LICENSE IN PRICING.md",
-  "homepage": "https://slidphilabs.vercel.app/access",
+  "homepage": "https://slidphilabs.vercel.app",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ceedot-rock/zero-range-wave-compression.git"
