@@ -29,4 +29,4 @@ npm install ./blackjack-compression-1.3.6.tgz
 
 ## Public npm after cutover
 
-Latest = **stub only**. Customers get real builds via https://slidphilabs.vercel.app/access
+Latest = **stub only**. Customers get real builds via https://www.slidphilabs.com/access
