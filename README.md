@@ -13,11 +13,13 @@ Not #1 general compressor. [SALE.md](SALE.md) · [PROTOCOL.md](PROTOCOL.md)
 
 ## Run
 
+The signed box is the demo. Tamper → HALT.
+
 ```bash
-node cli.js demo
+node cli.js run
 node cli.js gate
+node cli.js demo
 node test.js
-node bench-dominant.js
 ```
 
 Credit: **Powered by TRU8 · Slid Phi Labs**

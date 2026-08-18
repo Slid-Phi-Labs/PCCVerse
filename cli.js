@@ -1,7 +1,11 @@
 #!/usr/bin/env node
-import { readFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { spawnSync } from "node:child_process";
 import { boot, ingest, restore, faceAll } from "./src/machine.js";
 import { gateStatus } from "./src/blackbox.js";
+import { openSplb, statusFromBox, defaultBoxPath, extract } from "./src/splb.js";
 
 const cmd = process.argv[2];
 
@@ -13,8 +17,32 @@ if (cmd === "ingest" && process.argv[3]) {
 }
 
 if (cmd === "gate" || cmd === "box") {
-  console.log(JSON.stringify(gateStatus(), null, 2));
+  try {
+    const box = openSplb(readFileSync(process.argv[3] || defaultBoxPath()));
+    console.log(JSON.stringify(statusFromBox(box), null, 2));
+  } catch (e) {
+    if (String(e.message).startsWith("HALT")) {
+      console.log(JSON.stringify({ tamper: "HALT", error: e.message, buy: gateStatus().buy }, null, 2));
+      process.exit(2);
+    }
+    console.log(JSON.stringify(gateStatus(), null, 2));
+  }
   process.exit(0);
+}
+
+if (cmd === "run") {
+  const path = process.argv[3] || defaultBoxPath();
+  const box = openSplb(readFileSync(path));
+  const st = statusFromBox(box);
+  console.log("SPLB", st.name, st.tamper, st.box_open ? "OPEN" : "GATED", st.hours_left, "h left", st.files, "files");
+  if (!st.box_open) {
+    console.log("box closed — buy a seat", st.buy.lab_pass);
+    process.exit(3);
+  }
+  const dest = mkdtempSync(join(tmpdir(), "splb-"));
+  extract(box, dest);
+  const r = spawnSync(process.execPath, ["cli.js", "demo"], { cwd: dest, stdio: "inherit" });
+  process.exit(r.status ?? 1);
 }
 
 if (cmd === "demo") {
@@ -45,7 +73,8 @@ if (cmd === "demo") {
 }
 
 console.log(`swarm-smart
-  node cli.js demo
+  node cli.js run              # open signed box, HALT if tampered, run demo
+  node cli.js demo             # raw demo (same bits the box contains)
   node cli.js ingest <file>
-  node cli.js gate
+  node cli.js gate [box.splb]
 `);
