@@ -1,0 +1,44 @@
+{
+  "name": "swarm-smart",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Slid Phi Labs residual + swarm demo. Beats gzip on Calgary text. Not #1 GC. 24h black box.",
+  "scripts": {
+    "test": "node test.js",
+    "demo": "node cli.js demo",
+    "gate": "node cli.js gate",
+    "bench": "node bench-dominant.js"
+  },
+  "bin": {
+    "swarm-smart": "./cli.js"
+  },
+  "files": [
+    "src",
+    "cli.js",
+    "test.js",
+    "bench-dominant.js",
+    "README.md",
+    "SALE.md",
+    "PROTOCOL.md",
+    "LICENSE",
+    "demos"
+  ],
+  "keywords": [
+    "residual",
+    "compression",
+    "slid-phi-labs",
+    "tru8",
+    "black-box"
+  ],
+  "author": "Slid Phi Labs",
+  "license": "SEE LICENSE IN LICENSE",
+  "homepage": "https://www.slidphilabs.com/demos",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ceedot-rock/swarm-smart.git"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
