@@ -1,0 +1,7 @@
+MonthlyPack 2026.08-theory-pack
+TheoryVersion 2026.08
+KnowledgeVersion 2026.08-theory-pack
+notes 2026.08 monthly pack: T_ZERO fixed 8B, DICT/XOR/DELTA2 pathways, Wave 5 model-in-frame.
+programs 4
+self_test_cases 4
+self_test_near 3
