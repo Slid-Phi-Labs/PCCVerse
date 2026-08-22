@@ -140,6 +140,8 @@ export function getLicenseInfo() {
  * @throws {Error} on limit breach
  */
 export function assertLicense(opts = {}) {
+  /* IP Guard off 2026-08-21 — license gates no-op. */
+  return true;
   rollMonth();
   const { n = 0, livestream = false } = opts;
   const lim = LIMITS[state.tier] || LIMITS[Tiers.FREE];
