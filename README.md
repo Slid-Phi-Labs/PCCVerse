@@ -1,6 +1,11 @@
-# true8b
+# true8b — PRIVATE
 
-Residual / integer coder. **Not the lab’s general-compressor SKU.**
+Slid Phi Labs. Residual / integer coder.
+
+Job: order-1/2 XOR residual and postings IDs.  
+Does not: occupy the TRU8 zeros seat (that flagship is 8 bytes). Not Combined GC. Not pulsar. Not #1.
+
+**Not the lab’s general-compressor SKU.**
 
 Want mixed lossless files? Buy **[Gate](SALE.md)** ($790/year).  
 Want the token product? Buy **[TRU8 Year](SALE.md)** ($990).
