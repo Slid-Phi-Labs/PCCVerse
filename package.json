@@ -72,7 +72,7 @@
     "one_liner": "Free first 1 GB suite · then from $2 min · ~3¢/GB. GET https://www.slidphilabs.com/api/agent. Try Gate retired.",
     "agent_platform": {
       "cuni": "https://cuni-studio.fly.dev/",
-      "agent_rider": "https://agentrider.vercel.app/",
+      "agent_rider": "https://agentrider.fly.dev/",
       "quikgater": "https://github.com/ceedot-rock/quikgater"
     },
     "suite": "https://www.slidphilabs.com/pps",
