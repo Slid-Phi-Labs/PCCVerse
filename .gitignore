@@ -1,0 +1,5 @@
+pccx-crate/target/
+results/*.pccx
+results/*.out
+results/*.log
+results/*.bin

@@ -1,0 +1,37 @@
+files:
+  dickens            10192446
+  xml                 5345280
+  reymont             6627202
+  ooffice             6152192
+  sao                 7251944
+  nci                33553445
+  mozilla            51220480
+  mr                  9970564
+  osdb               10085684
+  samba              21606400
+  webster            41458703
+  x-ray               8474240
+  bib                  111261
+  book1                768771
+  book2                610856
+  geo                  102400
+  news                 377109
+  obj1                  21504
+  obj2                 246814
+  paper1                53161
+  paper2                82199
+  paper3                46526
+  paper4                13286
+  paper5                11954
+  paper6                38105
+  progc                 39611
+  progl                 71646
+  progp                 49379
+  trans                 93695
+  pic                  513216
+  zeros_10k.bin         10000
+  done dickens windows=623
+  done xml windows=327
+  done reymont windows=405
+  done ooffice windows=376
+  done sao windows=443

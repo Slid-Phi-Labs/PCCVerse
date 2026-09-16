@@ -1,0 +1,8 @@
+dickens stock raw=10192446 packed=2765611 op=12 exit=0 secs=95 verify=OK
+dickens new raw=10192446 packed=2765611 op=12 exit=0 secs=111 verify=OK
+ooffice stock raw=6152192 packed=TIMEOUT(deadlock) op=? exit=killed secs=90 verify=NOOUT
+ooffice new raw=6152192 packed=2950594 op=2 exit=0 secs=102 verify=OK
+samba stock raw=21606400 packed=TIMEOUT(deadlock) op=? exit=killed secs=165 verify=NOOUT
+samba new raw=21606400 packed=4699289 op=2 exit=0 secs=206 verify=OK
+xml stock raw=5345280 packed=432513 op=12 exit=0 secs=30 verify=OK
+xml new raw=5345280 packed=432513 op=12 exit=0 secs=24 verify=OK
