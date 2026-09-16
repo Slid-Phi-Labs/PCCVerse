@@ -36,23 +36,66 @@ stuck in `anon_pipe_write`, `xz` at 0 CPU) and with a 5 MB random-data probe
 thread drains stdout via `wait_with_output`; the writer drops its stdin
 handle (EOF to child). Probe after fix: 5 MB → xz in ~2 s, roundtrip OK.
 
-This deadlock fires for every non-text-like input > 4 MB (the `emit_thin_xz`
-gate), i.e. it is the "timeout" the SILESIA_SUBMIT notes reported for
-dickens/mozilla/webster/nci/samba-class files. The stock 0.3.0 binary used
-for the baseline below still has the bug, so stock **times out** on those
-files; that is recorded honestly, not substituted.
+Trigger condition (narrower than first thought): input > 4 MB **and** not
+text-like **and** the analyzer rates it compressible. sao escapes because the
+analyzer returns "not compressible" before the xz branch; nci escapes because
+it is text-like (xz branch skipped). Confirmed deadlocks: ooffice, samba,
+mozilla, mr, osdb, x-ray.
 
-## Held-out results (one shot, 2026-09-16)
+## Held-out results (2026-09-16)
 
-Corpus: `~/workspace/helix-match-exp/corpus/` (dev: dickens ooffice samba xml;
-heldout: mozilla mr nci osdb reymont sao webster x-ray).
+Corpus: `~/workspace/helix-match-exp/corpus/heldout/` — the full 12-file
+Silesia set (raw total 211,938,580 bytes, matches public Silesia size).
 Stock = pristine 0.3.0 release build; New = this tree. 3600 s timeout per file.
-Every decode SHA-256 verified against the original.
+Every successful decode SHA-256 verified against the original.
 
-| file | raw | stock packed (op) | new packed (op) | Δ bytes | verify |
-|---|---|---|---|---|---|
-| _to be filled_ ||||||
+| file | raw | stock packed (op) | new packed (op) | Δ (new−stock) | verify |
+|---|---:|---:|---:|---:|---|
+| dickens | 10,192,446 | 2,765,611 (12) | 2,765,611 (12) | 0 | OK |
+| ooffice | 6,152,192 | TIMEOUT (deadlock) | 2,950,594 (2) | — (stock hangs) | OK |
+| samba | 21,606,400 | TIMEOUT (deadlock) | 4,699,289 (2) | — (stock hangs) | OK |
+| xml | 5,345,280 | 432,513 (12) | 432,513 (12) | 0 | OK |
+| mozilla | 51,220,480 | TIMEOUT (deadlock) | 18,110,539 (2) | — (stock hangs) | OK |
+| mr | 9,970,564 | TIMEOUT (deadlock) | 2,481,649 (12) | — (stock hangs) | OK |
+| nci | 33,553,445 | 1,736,579 (12) | 1,736,579 (12) | 0 | OK |
+| osdb | 10,085,684 | TIMEOUT (deadlock) | 2,772,434 (12) | — (stock hangs) | OK |
+| reymont | 6,627,202 | 1,242,663 (12) | 1,242,663 (12) | 0 | OK |
+| sao | 7,251,944 | 5,150,500 (2) | **4,207,542 (13)** | **−942,958** | OK |
+| webster | 41,458,703 | 8,502,686 (12) | 8,502,686 (12) | 0 | OK |
+| x-ray | 8,474,240 | TIMEOUT (deadlock) | 3,837,303 (12) | — (stock hangs) | OK |
+
+**New 12-file total: 53,739,402 bytes (~53.74 MB). All 12 decodes SHA-256 verified.**
+
+**Comparable 6 files (both builds completed):** stock 19,830,552 → new
+18,887,594, **saving 942,958 bytes, all from sao.**
 
 ## Assessment
 
-_to be filled after the run._
+- **sao arm: genuine win.** Op 13 takes sao 5,150,500 → 4,207,542
+  (−942,958). Below the triage's ~3.0 MB estimate: per-column analysis shows
+  columns 0 and 2 (1,035,992 bytes each) fell back to raw — the byte-level
+  BWT second stage cannot reach the triage's value-level entropy bound on
+  wide u32 columns. Byte-plane splitting is the obvious next step (future
+  work; not tuned here).
+- **x-ray arm: did not win.** Aware V6 won at 3,837,303 (blob starts with
+  `AWAREv6`, not the xz branch); Delt16 lost the bake-off. The x-ray result
+  exists at all only because the deadlock fix lets the Aware pathway
+  complete — stock hangs. Versus the no-Aware Bwt baseline (4,307,078) the
+  unlocked Aware path saves 469,775 bytes, but that credit belongs to the
+  deadlock fix, not the Delt16 arm.
+- **Combined arm-attributable saving: 942,958 bytes** — short of the ~2.8 MB
+  target.
+- **No regressions:** every file stock completes, new matches or beats
+  byte-for-byte.
+- **The historical ~51.2 MB "stock" estimate is not reproduced** by a unified
+  stock 0.3.0 run. It mixed in Aware-pathway numbers (mozilla ~14.1 MB,
+  webster 8,169,000) that do not materialize in stock 0.3.0's bake-off:
+  pristine stock gives webster 8,502,686 (op 12) and deadlocks on mozilla.
+  The 53.74 MB above is the first complete, verified 12-file measurement of
+  this tree.
+- **Benchmark caveats:** three service restarts wiped `/tmp` and killed the
+  in-progress run each time; the script is resumable (skips recorded pairs),
+  so no row was measured twice and no partial row was kept — but the "one
+  uninterrupted shot" framing no longer applies literally. Another agent's
+  benchmark ran concurrently for part of the session (load ~5–8); affects
+  wall-clock times only, not output bytes.

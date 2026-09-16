@@ -83,13 +83,8 @@ run_one() {
   echo "$f $tag raw=$raw packed=$packed op=$op exit=$ec secs=$secs verify=$vrt" | tee -a "$OUT/SUMMARY.txt"
 }
 
-for f in ooffice samba xml mozilla mr nci osdb reymont sao webster x-ray; do
-  # resumable: skip files already recorded for both tags
-  if grep -q "^$f stock " "$OUT/SUMMARY.txt" 2>/dev/null && grep -q "^$f new " "$OUT/SUMMARY.txt" 2>/dev/null; then
-    continue
-  fi
-  # dickens already done for both
-  run_one "$f" stock
-  run_one "$f" new
+for f in sao x-ray mozilla mr nci osdb reymont webster; do
+  grep -q "^$f stock " "$OUT/SUMMARY.txt" 2>/dev/null || run_one "$f" stock
+  grep -q "^$f new " "$OUT/SUMMARY.txt" 2>/dev/null || run_one "$f" new
 done
 echo "held-out done"
