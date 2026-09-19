@@ -186,46 +186,71 @@ pub fn encode(data: &[u8]) -> Option<Vec<u8>> {
     let crc = crc32(data);
     let mut best_op = Op::Store;
     let mut best = data.to_vec();
+    // Per-candidate exact byte counts for the audit trail: every candidate
+    // arm runs real compression on every input; the winner is the true
+    // minimum by measured bytes. No heuristic gating.
+    let mut n_zero = 0usize;
+    let mut n_lz = 0usize;
+    let mut n_bwt = 0usize;
+    let mut n_sao: Option<usize> = None;
+    let mut n_d16: Option<usize> = None;
+    let mut n_aware = 0usize;
     if let Some(s) = solid(data) {
         let b = vec![s];
+        n_zero = b.len();
         if b.len() < best.len() {
             best_op = Op::Zero;
             best = b;
         }
     }
     let lz = lz_tokens(data);
+    n_lz = lz.len();
     if lz.len() < best.len() {
         best_op = Op::Match;
         best = lz;
     }
     let bwt = pulsar::bwt_ans::compress(data);
+    n_bwt = bwt.len();
     if bwt.len() < best.len() {
-        // reuse Match op slot only for own LZ; BWT stored as Store-tagged? 
-        // Keep as extra candidate using Store variant is wrong.
-        // Use Match blob only for LZ. We'll pack BWT as op 2 via a new arm.
         best_op = Op::Bwt;
         best = bwt;
     }
     if let Some(s) = arms::sao_encode(data) {
+        n_sao = Some(s.len());
         if s.len() < best.len() {
             best_op = Op::Sao;
             best = s;
         }
     }
     if let Some(d) = arms::d16_encode(data) {
+        n_d16 = Some(d.len());
         if d.len() < best.len() {
             best_op = Op::Delt16;
             best = d;
         }
     }
+    // Aware arm: no magic-byte ("foreign") rejection. Whatever verified
+    // bytes combined-gc produces compete purely on exact byte count.
     let gc = combined_gc::frame::compress(data).bytes;
-    let foreign = gc.len() >= 2 && gc.starts_with(&[0x1f, 0x8b])
-        || (gc.len() >= 4 && (gc.starts_with(b"XZ1\0") || gc.starts_with(b"ZLB1") || gc.starts_with(b"BZh")));
-    if !foreign && gc.len() < best.len() {
+    n_aware = gc.len();
+    if gc.len() < best.len() {
         if combined_gc::frame::decompress(&gc).ok().as_deref() == Some(data) {
             best_op = Op::Aware;
             best = gc;
         }
+    }
+    if std::env::var("PCCX_AUDIT").is_ok() {
+        eprintln!(
+            "AUDIT in={} zero={} lz={} bwt={} sao={} d16={} aware={} winner={:?}",
+            data.len(),
+            n_zero,
+            n_lz,
+            n_bwt,
+            n_sao.map_or("na".to_string(), |v| v.to_string()),
+            n_d16.map_or("na".to_string(), |v| v.to_string()),
+            n_aware,
+            best_op,
+        );
     }
     if best.len() >= data.len() && best_op != Op::Zero {
         return None;

@@ -69,6 +69,7 @@ pub fn compress(data: &[u8]) -> CompressResult {
 
 pub fn compress_with_pack(data: &[u8], pack: usize) -> CompressResult {
     let analysis = Analyzer::analyze(data);
+    let audit_on = std::env::var("PCCX_AUDIT").is_ok();
     if zrw::is_zero_run(data) {
         let program = Program {
             ops: vec![crate::vm::Op::Tru8Zero],
@@ -82,61 +83,29 @@ pub fn compress_with_pack(data: &[u8], pack: usize) -> CompressResult {
             }],
             data.len() as u64,
         );
-        return CompressResult {
-            bytes,
-            program,
-            analysis,
-        };
-    }
-    if !analysis.is_compressible() {
-        // Last chance: a cheap delta can still crush ramps that look random in H.
-        let store = Program::store();
-        let probe = Program {
-            ops: vec![crate::vm::Op::Delta { order: 1 }, crate::vm::Op::Lz],
-        };
-        let store_fit = pipeline::fitness(&store, data);
-        let probe_fit = pipeline::fitness(&probe, data);
-        let program = if probe_fit + 16 < store_fit {
-            probe
-        } else {
-            store
-        };
-        if matches!(program.ops.first(), Some(crate::vm::Op::Store)) {
-            let bytes = aware_container::encode_aware(
-                vec![AwareBlock {
-                    prog: program.to_bytes(),
-                    residual: data.to_vec(),
-                    orig_len: data.len() as u32,
-                }],
-                data.len() as u64,
+        if audit_on {
+            eprintln!(
+                "AWARE_AUDIT in={} zero_run=1 bytes={}",
+                data.len(),
+                bytes.len()
             );
-            return CompressResult {
-                bytes,
-                program,
-                analysis,
-            };
         }
-        let residual = pipeline::apply(&program, data);
-        let bytes = aware_container::encode_aware(
-            vec![AwareBlock {
-                prog: program.to_bytes(),
-                residual,
-                orig_len: data.len() as u32,
-            }],
-            data.len() as u64,
-        );
         return CompressResult {
             bytes,
             program,
             analysis,
         };
     }
+    // No analyzer-verdict early exit: every input runs the full program
+    // search below and the winner is picked by exact measured bytes.
+    // (Estimates may order trials; they must not skip them.)
 
     let mut blocks = Vec::new();
     let mut first_prog: Option<Program> = None;
     let mut hist = Vec::new();
     let mut v6 = AwareV6::default();
     let mut last_mtf: Option<[u8; 256]> = None;
+    let mut chunk_tags: Vec<String> = Vec::new();
     let pack = pack.max(1);
     let hist_cap = dict::hist_cap_for(data);
     for chunk in data.chunks(pack) {
@@ -162,24 +131,22 @@ pub fn compress_with_pack(data: &[u8], pack: usize) -> CompressResult {
             program = dlz_bwt_prog;
             residual = dlz_bwt_res;
         }
-        let xform_bank = if crate::analyzer::is_text_like(chunk) {
-            Vec::new()
-        } else {
-            vec![
-                Program {
-                    ops: vec![Op::XorFloat, Op::DictLz, Op::Bwt, Op::Mtf, Op::Ans],
-                },
-                Program {
-                    ops: vec![
-                        Op::Delta { order: 2 },
-                        Op::DictLz,
-                        Op::Bwt,
-                        Op::Mtf,
-                        Op::Ans,
-                    ],
-                },
-            ]
-        };
+        // Transform bank: always tried, winner by exact bytes.
+        // No is_text_like gating (audit: file-type verdicts must not skip paths).
+        let xform_bank = vec![
+            Program {
+                ops: vec![Op::XorFloat, Op::DictLz, Op::Bwt, Op::Mtf, Op::Ans],
+            },
+            Program {
+                ops: vec![
+                    Op::Delta { order: 2 },
+                    Op::DictLz,
+                    Op::Bwt,
+                    Op::Mtf,
+                    Op::Ans,
+                ],
+            },
+        ];
         for p in &xform_bank {
             let r = pipeline::apply_seeded_dict(p, chunk, seed_ref, &[]);
             if r.len() + 8 < residual.len() {
@@ -187,7 +154,9 @@ pub fn compress_with_pack(data: &[u8], pack: usize) -> CompressResult {
                 residual = r;
             }
         }
-        if chunk.len() <= 65_536 {
+        // Context mixer: tried on every chunk, winner by exact bytes.
+        // No chunk-size gating (audit).
+        {
             let cm_res = cm::cm_encode(chunk);
             if cm_res.len() + 8 < residual.len() {
                 program = Program {
@@ -217,7 +186,9 @@ pub fn compress_with_pack(data: &[u8], pack: usize) -> CompressResult {
             };
             residual = z;
         }
-        if !crate::analyzer::is_text_like(chunk) {
+        // BCJ+Zlib: tried on every chunk, winner by exact bytes.
+        // No is_text_like gating (audit).
+        {
             let bcj_z = pipeline::apply(
                 &Program {
                     ops: vec![Op::Bcj, Op::Zlib],
@@ -234,6 +205,9 @@ pub fn compress_with_pack(data: &[u8], pack: usize) -> CompressResult {
         if first_prog.is_none() {
             first_prog = Some(program.clone());
         }
+        if audit_on {
+            chunk_tags.push(format!("{:?}", program.ops));
+        }
         blocks.push(V6Block {
             prog: program.to_bytes(),
             residual,
@@ -243,12 +217,14 @@ pub fn compress_with_pack(data: &[u8], pack: usize) -> CompressResult {
         v6.update(chunk);
         last_mtf = advance_mtf_state(chunk, &program, &seed);
     }
-    let bytes = aware_v6::encode_v6(blocks, data.len() as u64);
+    let v6_bytes = aware_v6::encode_v6(blocks, data.len() as u64);
+    let v6_len = v6_bytes.len();
     let program = first_prog.unwrap_or_else(Program::store);
     // Whole-file zlib-ng bake-off. Beats v6 on small binaries when RLE/pack
     // split hides 3-byte hashes. Loses to BWT+ANS on text.
     let thin = pipeline::emit_thin_zlib(data);
-    let (bytes, program) = if thin.len() < bytes.len() {
+    let thin_len = thin.len();
+    let (bytes, program) = if thin.len() < v6_bytes.len() {
         (
             thin,
             Program {
@@ -256,14 +232,14 @@ pub fn compress_with_pack(data: &[u8], pack: usize) -> CompressResult {
             },
         )
     } else {
-        (bytes, program)
+        (v6_bytes, program)
     };
-    // Whole-file LZMA2 (system xz -9). mozilla/sao/ooffice class only.
-    // Skip text and <4MB so dickens / obj1 / osdb-64K locks stay.
-    let (bytes, program) = if data.len() > 4_000_000
-        && !crate::analyzer::is_text_like(data)
-    {
+    // Whole-file LZMA2 (system xz -9): tried on every input, winner by
+    // exact bytes. No size or is_text_like gating (audit).
+    let mut xz_len: Option<usize> = None;
+    let (bytes, program) = {
         if let Some(xz) = crate::xz_thin::emit_thin_xz(data) {
+            xz_len = Some(xz.len());
             if xz.len() < bytes.len() {
                 (
                     xz,
@@ -277,9 +253,26 @@ pub fn compress_with_pack(data: &[u8], pack: usize) -> CompressResult {
         } else {
             (bytes, program)
         }
-    } else {
-        (bytes, program)
     };
+    if audit_on {
+        use std::collections::BTreeMap;
+        let mut hist: BTreeMap<&str, usize> = BTreeMap::new();
+        for t in &chunk_tags {
+            *hist.entry(t.as_str()).or_insert(0) += 1;
+        }
+        eprintln!(
+            "AWARE_AUDIT in={} pack={} chunks={} v6={} thin_zlib={} xz={} winner_ops={:?} winner_bytes={} chunk_winners={:?}",
+            data.len(),
+            pack,
+            chunk_tags.len(),
+            v6_len,
+            thin_len,
+            xz_len.map(|x| x.to_string()).unwrap_or_else(|| "none".into()),
+            program.ops,
+            bytes.len(),
+            hist,
+        );
+    }
     CompressResult {
         bytes,
         program,

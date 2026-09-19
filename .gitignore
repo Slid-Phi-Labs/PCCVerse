@@ -1,5 +1,14 @@
-pccx-crate/target/
-results/*.pccx
-results/*.out
-results/*.log
-results/*.bin
+## build artifacts
+target/
+__pycache__/
+*.pyc
+*.o
+*.a
+*.so
+*.dylib
+## bulk encoded outputs (Drive archive holds these)
+results/
+*.pccx
+## local notes / scratch
+*.swp
+.DS_Store

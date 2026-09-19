@@ -99,3 +99,70 @@ Every successful decode SHA-256 verified against the original.
   uninterrupted shot" framing no longer applies literally. Another agent's
   benchmark ran concurrently for part of the session (load ~5–8); affects
   wall-clock times only, not output bytes.
+
+---
+
+# arms-opt: exhaustive picker + Sao planes + Delt16 variants (2026-09-16)
+
+Branch `arms-opt` (from `6409b9a`), local only, never pushed.
+Hard requirement: **the chosen path must be proven smallest by exact byte
+count** — every file runs every candidate arm/path, no heuristic gating may
+skip an arm (file type, analyzer verdict, text detection, input size, ...).
+Estimates may order trials for speed only. Full gate audit:
+`AUDIT_PICKER.md`.
+
+## What changed
+
+**Sao arm (`src/arms.rs`):** columns 0/2/3 now run `col_raw_best` — an exact
+local bake-off per column: interleaved bytes (raw/LZ/BWT), 4 byte planes
+(each raw/LZ/BWT), wrapping-u32 delta (raw/LZ/BWT); minimum total including
+framing wins. New decoder methods 3 (planes) and 4 (u32-delta). Old treatment
+(interleaved best_of) is a strict subset of the new option set → no-regress
+by construction. 4 new unit tests (ramp→delta, splitmix-random→raw,
+narrow-band→planes/delta, structured-column roundtrip asserting col0 takes
+delta).
+
+**Delt16 arm (`src/arms.rs`):** size gate removed (was even-length ≥ 64 KiB);
+now runs on every input ≥ 2 bytes (odd lengths zero-padded, flag stored,
+stripped on decode). 4-way bake-off per file by exact bytes: v0 first-order
+u16 delta, v1 raw u16 low/high byte planes, v2 delta-then-planes, v3
+second-order delta. Decoder handles all variants + odd lengths.
+
+**Picker ungating (`src/lib.rs`, `vendor/combined-gc`):** removed the
+foreign-magic (XZ/Zlib) rejection of winning blobs; removed the analyzer
+`is_compressible()` early exit; full ~32-program NCA bank runs on every
+chunk (was pruned to 5 for text-like); added XorF4 + DeltaVar programs;
+`cm` context mixer tried on every chunk (was ≤ 64 KiB non-text only);
+BCJ+Zlib tried on every chunk (was non-text only); whole-file `xz -9` tried
+on every file (was non-text > 4 MiB only); NCA `nbytes ≥ 512` gate removed;
+Tru8Zero always a candidate (was zero_ratio > 0.98); zero-run early return
+removed (still runs as a candidate). `PCCX_AUDIT=1` prints per-candidate
+exact bytes (`AUDIT ...`) and Aware-internal winners (`AWARE_AUDIT ...`).
+
+## Final single-shot run (12 files, 3600 s/file, all SHA-256 verified)
+
+Tuned on dev files only (dickens/ooffice/samba/xml); this is the one final
+measurement. Baseline: 53,739,402.
+
+| file | baseline packed | new packed | Δ | winner path | verify |
+|---|---:|---:|---:|---|---|
+| dickens | 2,765,611 | — | — | — | — |
+| ooffice | 2,950,594 | — | — | — | — |
+| samba | 4,699,289 | — | — | — | — |
+| xml | 432,513 | — | — | — | — |
+| mozilla | 18,110,539 | — | — | — | — |
+| mr | 2,481,649 | — | — | — | — |
+| nci | 1,736,579 | — | — | — | — |
+| osdb | 2,772,434 | — | — | — | — |
+| reymont | 1,242,663 | — | — | — | — |
+| sao | 4,207,542 | — | — | — | — |
+| webster | 8,502,686 | — | — | — | — |
+| x-ray | 3,837,303 | — | — | — | — |
+| **total** | **53,739,402** | — | — | | |
+
+Old-picker wrong picks (files where the old picker provably chose wrong,
+with exact old-vs-new bytes and the gate that caused it): see
+`AUDIT_PICKER.md`. Dev-file evidence so far: ooffice −523,744 and samba
+−935,639, both from the removed whole-file-XZ text-like gate.
+
+`cargo test --release`: 12/12 pass.

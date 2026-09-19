@@ -52,8 +52,7 @@ pub fn seed_program(analysis: &Analysis) -> Program {
     Program { ops }
 }
 
-fn bank(analysis: &Analysis, data: &[u8]) -> Vec<Program> {
-    let nbytes = data.len();
+fn bank(analysis: &Analysis) -> Vec<Program> {
     let mut v = vec![
         Program::store(),
         Program { ops: vec![Op::Lz] },
@@ -77,7 +76,9 @@ fn bank(analysis: &Analysis, data: &[u8]) -> Vec<Program> {
             ops: vec![Op::Hangry { order: 5 }, Op::Lz],
         },
     ];
-    if nbytes >= 512 {
+    // Audit: no size gating. Every program below is measured by exact
+    // fitness; the bank is never pruned by heuristics.
+    {
         v.push(Program {
             ops: vec![Op::Bwt, Op::Lz],
         });
@@ -123,13 +124,16 @@ fn bank(analysis: &Analysis, data: &[u8]) -> Vec<Program> {
         v.push(Program {
             ops: vec![Op::Delta { order: 2 }, Op::Bwt, Op::Mtf, Op::Ans],
         });
-    }
+    } // (was: if nbytes >= 512 — audit: no size gating)
     if analysis.zero_ratio > 0.98 {
         v.push(Program {
             ops: vec![Op::Tru8Zero],
         });
     }
-    if nbytes >= 512 && !crate::analyzer::is_text_like(data) {
+    // Audit: XorF4/DeltaVar programs always in the bank (was gated on
+    // nbytes >= 512 && !is_text_like). No text_like retain-prune below:
+    // the full bank is measured by exact fitness on every input.
+    {
         v.push(Program {
             ops: vec![Op::XorF4, Op::Bwt, Op::Lz],
         });
@@ -145,23 +149,6 @@ fn bank(analysis: &Analysis, data: &[u8]) -> Vec<Program> {
         v.push(Program {
             ops: vec![Op::DeltaVar, Op::Bwt, Op::Mtf, Op::Ans],
         });
-    }
-    if crate::analyzer::is_text_like(data) {
-        v.retain(|p| {
-            matches!(
-                p.ops.as_slice(),
-                [Op::Store]
-                    | [Op::Lz]
-                    | [Op::Ans]
-                    | [Op::Bwt, Op::Mtf, Op::Ans]
-                    | [Op::Bwt, Op::Mtf, Op::Rle, Op::Ans]
-            )
-        });
-        if v.is_empty() {
-            v.push(Program {
-                ops: vec![Op::Bwt, Op::Mtf, Op::Ans],
-            });
-        }
     }
     v
 }
@@ -203,7 +190,7 @@ pub fn evolve(data: &[u8], analysis: &Analysis, cfg: &NcaConfig) -> Program {
     let sample = if data.len() > 4096 { &data[..4096] } else { data };
     let mut rng = Rng(xxh3_64(sample) | 1);
     let trained = crate::models_live::trained_program(crate::models_live::analyze_block(data).coder);
-    let mut pop: Vec<(Program, usize)> = bank(analysis, sample)
+    let mut pop: Vec<(Program, usize)> = bank(analysis)
         .into_iter()
         .map(|p| {
             let f = pipeline::fitness(&p, sample);
@@ -244,7 +231,7 @@ pub fn pick_best(data: &[u8]) -> Program {
     let trained = crate::models_live::trained_program(crate::models_live::analyze_block(data).coder);
     let mut best = trained.clone();
     let mut best_f = pipeline::fitness(&best, data);
-    for p in bank(&analysis, data).into_iter().chain(std::iter::once(trained)) {
+    for p in bank(&analysis).into_iter().chain(std::iter::once(trained)) {
         let f = pipeline::fitness(&p, data);
         if f < best_f {
             best_f = f;
