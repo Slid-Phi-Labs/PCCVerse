@@ -1,0 +1,6 @@
+/target/
+/corpora/
+Cargo.lock
+*.bin
+*.orig
+.DS_Store
