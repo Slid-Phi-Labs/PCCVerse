@@ -220,40 +220,11 @@ pub fn compress_with_pack(data: &[u8], pack: usize) -> CompressResult {
     let v6_bytes = aware_v6::encode_v6(blocks, data.len() as u64);
     let v6_len = v6_bytes.len();
     let program = first_prog.unwrap_or_else(Program::store);
-    // Whole-file zlib-ng bake-off. Beats v6 on small binaries when RLE/pack
-    // split hides 3-byte hashes. Loses to BWT+ANS on text.
-    let thin = pipeline::emit_thin_zlib(data);
-    let thin_len = thin.len();
-    let (bytes, program) = if thin.len() < v6_bytes.len() {
-        (
-            thin,
-            Program {
-                ops: vec![Op::Zlib],
-            },
-        )
-    } else {
-        (v6_bytes, program)
-    };
-    // Whole-file LZMA2 (system xz -9): tried on every input, winner by
-    // exact bytes. No size or is_text_like gating (audit).
-    let mut xz_len: Option<usize> = None;
-    let (bytes, program) = {
-        if let Some(xz) = crate::xz_thin::emit_thin_xz(data) {
-            xz_len = Some(xz.len());
-            if xz.len() < bytes.len() {
-                (
-                    xz,
-                    Program {
-                        ops: vec![Op::Xz],
-                    },
-                )
-            } else {
-                (bytes, program)
-            }
-        } else {
-            (bytes, program)
-        }
-    };
+    // Lab-owned encode path only: v6 (with its per-chunk Zlib/Bcj+Zlib
+    // candidates, kept per operator call) is the final word. No whole-file
+    // zlib-ng or system-xz bake-offs on encode. Old ZLB1/XZ streams
+    // still decode via parse_thin_zlib / xz_thin::xz_decode.
+    let bytes = v6_bytes;
     if audit_on {
         use std::collections::BTreeMap;
         let mut hist: BTreeMap<&str, usize> = BTreeMap::new();
@@ -261,13 +232,11 @@ pub fn compress_with_pack(data: &[u8], pack: usize) -> CompressResult {
             *hist.entry(t.as_str()).or_insert(0) += 1;
         }
         eprintln!(
-            "AWARE_AUDIT in={} pack={} chunks={} v6={} thin_zlib={} xz={} winner_ops={:?} winner_bytes={} chunk_winners={:?}",
+            "AWARE_AUDIT in={} pack={} chunks={} v6={} winner_ops={:?} winner_bytes={} chunk_winners={:?}",
             data.len(),
             pack,
             chunk_tags.len(),
             v6_len,
-            thin_len,
-            xz_len.map(|x| x.to_string()).unwrap_or_else(|| "none".into()),
             program.ops,
             bytes.len(),
             hist,

@@ -196,15 +196,6 @@ pub fn zlib_decode(data: &[u8]) -> Result<Vec<u8>, &'static str> {
 /// Standalone thin file: ZLB1 | u32 orig_len | zlib payload.
 pub const ZLB_MAGIC: &[u8; 4] = b"ZLB1";
 
-pub fn emit_thin_zlib(data: &[u8]) -> Vec<u8> {
-    let payload = zlib_encode(data);
-    let mut out = Vec::with_capacity(8 + payload.len());
-    out.extend_from_slice(ZLB_MAGIC);
-    out.extend_from_slice(&(data.len() as u32).to_le_bytes());
-    out.extend_from_slice(&payload);
-    out
-}
-
 pub fn parse_thin_zlib(buf: &[u8]) -> Result<Vec<u8>, &'static str> {
     if buf.len() < 8 || &buf[..4] != ZLB_MAGIC {
         return Err("zlb1: magic");
