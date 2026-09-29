@@ -140,8 +140,10 @@ export function getLicenseInfo() {
  * @throws {Error} on limit breach
  */
 export function assertLicense(opts = {}) {
-  /* IP Guard off 2026-08-21 — license gates no-op. */
-  return true;
+  // License gates ENFORCED (restored 2026-09-29). Tiers per PRICING.md.
+  // NOTE: metering is process-local (in-memory); production deployments
+  // should back it with a durable store. Key validation is format-only;
+  // paid keys are issued by the publisher (see FREE_KEYS.json tracking).
   rollMonth();
   const { n = 0, livestream = false } = opts;
   const lim = LIMITS[state.tier] || LIMITS[Tiers.FREE];
