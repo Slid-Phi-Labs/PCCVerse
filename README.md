@@ -1,6 +1,5 @@
 # zero-range-wave-compression
 
-[![Audited checks](https://github.com/ceedot-rock/zero-range-wave-compression/actions/workflows/audited-checks.yml/badge.svg)](https://github.com/ceedot-rock/zero-range-wave-compression/actions/workflows/audited-checks.yml)
 [![License: proprietary — see PRICING.md](https://img.shields.io/badge/license-proprietary-blue)](PRICING.md)
 
 **Private repo.** Not a public dump. Host works here.
