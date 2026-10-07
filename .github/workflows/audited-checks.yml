@@ -1,0 +1,37 @@
+name: Audited checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: cargo test (pccx snapshot crate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run pccx crate tests
+        working-directory: pccx-0.3.0/pccx-crate
+        run: cargo test
+    # NOTE: the repo-root Cargo.toml references vendor/ + src/bin/pccx.rs that are
+    # only present inside the pccx-0.3.0/pccx-crate/ snapshot, so CI targets the
+    # self-contained snapshot crate. License stays UNLICENSED (not published).
+
+  secrets-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan for committed secrets
+        run: |
+          set -e
+          echo "Scanning for common secret patterns..."
+          ! grep -rnE "AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|BEGIN [A-Z ]*PRIVATE KEY|sk_(live|test)_[A-Za-z0-9]+|xox[bap]-[A-Za-z0-9-]+|-----BEGIN" \
+            --include="*.py" --include="*.html" --include="*.txt" --include="*.md" --include="*.yml" --exclude="audited-checks.yml" .
+          echo "No secrets found."
