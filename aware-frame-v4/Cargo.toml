@@ -1,0 +1,18 @@
+[package]
+name = "aware_frame"
+version = "0.4.0"
+edition = "2021"
+description = "Aware Frame WAVE 4 - Adaptive multi-stage compression for Slid Phi Labs"
+authors = ["Slid Phi Labs"]
+
+[dependencies]
+rand = "0.8"
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[[bin]]
+name = "force_theory_bench"
+path = "src/bin/force_theory_bench.rs"
