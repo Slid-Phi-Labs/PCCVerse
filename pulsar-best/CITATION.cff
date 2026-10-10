@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: pulsar
+authors:
+  - family-names: Tasz
+    given-names: Corey
+    email: corey@slidphilabs.com
+    affiliation: Slid Phi Labs
+version: 2.5.0
+date-released: 2026-10-09
+repository-code: "https://github.com/ceedot-rock/pulsar-best"
+url: "https://www.slidphilabs.com"
+license: GPL-3.0-or-later
+abstract: "Free local lossless compressor (Rust) from Slid Phi Labs. Silesia 12-file: 55,745,438 bytes of 211,938,580, decode verified 12/12 — beats gzip -9, loses to bzip2 -9 and xz -6. Demo; not the hosted PCC product."

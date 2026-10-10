@@ -1,0 +1,8 @@
+pulsar for Windows x64
+Same source as Linux 2.5.0. Same Silesia line: 55,745,438 / 211,938,580.
+Not the hosted PCC product.
+
+encode:  pulsar.exe encode IN -o OUT
+decode:  pulsar.exe decode OUT -o BACK
+
+Windows may SmartScreen an unsigned zip. Right-click → Properties → Unblock.

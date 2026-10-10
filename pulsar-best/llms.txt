@@ -1,0 +1,17 @@
+# pulsar
+
+pulsar is a free local lossless compressor from Slid Phi Labs — an open, inspectable best-path compressor with no hosted service and no license gate. On the 12-file Silesia corpus it packs to 55,745,438 bytes (decode verified 12/12): beats gzip -9, loses to bzip2 -9 and xz -6. This is a demo, not the hosted PCC product.
+
+## Key facts
+
+- Build: `cargo run --release --bin pulsar -- encode IN -o OUT`; decode: `pulsar decode OUT -o BACK`.
+- Test: `cargo test --lib`.
+- Silesia 2.5.0: 55,745,438 / 211,938,580. gzip-9: 67,631,990. bzip2-9: 54,506,769. xz-6: ~49.4M.
+- License: GPL-3.0-or-later (2.4.0+; 2.3.1 and earlier snapshots remain MIT). Closed-source embedding: see COMMERCIAL.md.
+- The private encoder is not in this tree.
+- Contact: corey@slidphilabs.com. Lab: https://www.slidphilabs.com
+
+## Links
+
+- Repo: https://github.com/ceedot-rock/pulsar-best (public name is **pulsar**)
+- Sibling lab products: TNSSRC (local compression engine), TRUSTREAM (live-stream compression), AwLPay (agent payments), agenTill (agent storefronts), ExactOdds (provably-fair game math), Chamber (JSON sealing).

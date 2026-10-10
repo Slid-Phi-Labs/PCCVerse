@@ -1,0 +1,61 @@
+# Builds pulsar.exe on windows-latest. Attach the zip to tag v2.5.0.
+# Do not retag Silesia. Do not bump the version to ship an OS.
+
+name: release-windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to attach the Windows zip to
+        required: true
+        default: v2.5.0
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  windows-x64:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Test
+        run: cargo test --lib --release
+
+      - name: Build
+        run: cargo build --release --bin pulsar --target x86_64-pc-windows-msvc
+
+      - name: Stage zip
+        shell: pwsh
+        run: |
+          $dest = "pulsar-windows-x64"
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          Copy-Item target/x86_64-pc-windows-msvc/release/pulsar.exe $dest/
+          Copy-Item LICENSE, README.md, COMMERCIAL.md $dest/ -ErrorAction SilentlyContinue
+          @"
+          pulsar for Windows x64
+          Same source as Linux 2.5.0. Same Silesia line: 55,745,438 / 211,938,580.
+          Not the hosted PCC product.
+
+          encode:  pulsar.exe encode IN -o OUT
+          decode:  pulsar.exe decode OUT -o BACK
+          "@ | Set-Content $dest/WINDOWS.txt
+          Compress-Archive -Path $dest -DestinationPath pulsar-2.5.0-windows-x64.zip -Force
+
+      - name: Upload to the existing release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: pulsar-2.5.0-windows-x64.zip
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
