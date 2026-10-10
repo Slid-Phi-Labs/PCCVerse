@@ -1,0 +1,66 @@
+files:
+  dickens            10192446
+  xml                 5345280
+  reymont             6627202
+  ooffice             6152192
+  sao                 7251944
+  nci                33553445
+  mozilla            51220480
+  mr                  9970564
+  osdb               10085684
+  samba              21606400
+  webster            41458703
+  x-ray               8474240
+  bib                  111261
+  book1                768771
+  book2                610856
+  geo                  102400
+  news                 377109
+  obj1                  21504
+  obj2                 246814
+  paper1                53161
+  paper2                82199
+  paper3                46526
+  paper4                13286
+  paper5                11954
+  paper6                38105
+  progc                 39611
+  progl                 71646
+  progp                 49379
+  trans                 93695
+  pic                  513216
+  zeros_10k.bin         10000
+  done dickens windows=623
+  done xml windows=327
+  done reymont windows=405
+  done ooffice windows=376
+  done sao windows=443
+  done nci windows=2048
+  done mozilla windows=3127
+  done mr windows=609
+  done osdb windows=616
+  done samba windows=1319
+  done webster windows=2531
+  done x-ray windows=518
+  done bib windows=7
+  done book1 windows=47
+  done book2 windows=38
+  done geo windows=7
+  done news windows=24
+  done obj1 windows=2
+  done obj2 windows=16
+  done paper1 windows=4
+  done paper2 windows=6
+  done paper3 windows=3
+  done paper4 windows=1
+  done paper5 windows=1
+  done paper6 windows=3
+  done progc windows=3
+  done progl windows=5
+  done progp windows=3
+  done trans windows=6
+  done pic windows=32
+  done zeros_10k.bin windows=1
+samples=13151 E=[0.000,94.941]
+occupied 1088
+wrote table

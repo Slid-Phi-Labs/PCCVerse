@@ -1,0 +1,8 @@
+combined-gc 1.19.2-combined-gc  file=/tmp/dickens900.bin  raw=900000
+Gate: Text entropy=4.486 printable=0.97 zero_runs=0 delta_var=2039.802 weights=[0.15, 0.15, 0.1, 0.7, 0.1]
+AWARE 1.19.2-combined-gc  type=Json H=4.486  900000 -> 243675  program=BWT16K+MTF+ANS
+Cont-1088 cont1088-v3-full-silesia-2026-08-26 bin=708/1088 trained=true coder=DEFLATE q=1 E=31.778 dens=2.500 Block
+gzip-9 331495
+AWARE/raw 0.271  AWARE vs gzip-9 -26.5%
+honest: table cont1088-v3-full-silesia 13151 windows zlib-9; not a 21.4% dickens claim
+time 8.65
