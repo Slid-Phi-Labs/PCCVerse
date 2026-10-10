@@ -1,0 +1,27 @@
+{
+  "note": "Honest ratios. true8b Path A is residual specialist — does not beat xz/bzip2 on general text.",
+  "calgary_total": {
+    "orig": 3251493,
+    "true8b": 2096506,
+    "true8b_pct": 64.5,
+    "gzip9": 1059440,
+    "gzip9_pct": 32.6,
+    "bzip2_9": 866501,
+    "bzip2_pct": 26.6,
+    "xz9": 885716,
+    "xz9_pct": 27.2
+  },
+  "canterbury_total": {
+    "orig": 2810784,
+    "true8b": 1269822,
+    "true8b_pct": 45.2,
+    "gzip9": 730732,
+    "gzip9_pct": 26.0,
+    "bzip2_9": 542710,
+    "bzip2_pct": 19.3,
+    "xz9": 492276,
+    "xz9_pct": 17.5
+  },
+  "all_roundtrips_passed": true,
+  "full_per_file": "see local artifacts/true8b_public_bench.json for complete per-file matrix"
+}

@@ -1,0 +1,93 @@
+name: Audited checks
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE_BOX.md'
+      - 'PRICING.md'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  node-tests:
+    name: npm test (compress/decompress roundtrip)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run test suite
+        run: npm test
+
+  node-syntax:
+    name: node --check on .js / .mjs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax-check library, server, MCP, and bin sources
+        run: |
+          find . -maxdepth 1 -name '*.mjs' -print0 | xargs -0 -n1 node --check
+          find bin scripts -name '*.mjs' -print0 | xargs -0 -n1 node --check
+          node --check index.js
+          echo OK
+
+  audit:
+    name: License, version, and secrets audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: License files present
+        run: |
+          for f in PRICING.md LICENSE_BOX.md; do
+            [ -f "$f" ] || { echo "MISSING $f"; exit 1; }
+          done
+          echo "license files OK"
+      - name: package.json license points at PRICING.md
+        run: |
+          grep -q 'SEE LICENSE IN PRICING.md' package.json \
+            || { echo "package.json license no longer references PRICING.md"; exit 1; }
+          echo "license metadata OK"
+      - name: Declared version vs git tags (advisory)
+        run: |
+          ver=$(node -p "require('./package.json').version")
+          if git rev-parse "v$ver^{tag}" >/dev/null 2>&1; then
+            echo "version $ver has annotated tag v$ver"
+          else
+            echo "::warning::no annotated tag v$ver for declared version $ver"
+          fi
+      - name: No secrets committed
+        run: |
+          # FREE_KEYS_ISSUED.json.example is schema-only and the CI
+          # workflows reference secrets by name (secrets.NPM_TOKEN), so both
+          # are excluded from the scan.
+          hits=$(grep -rInE \
+            -e 'ZRW-[A-Za-z0-9]{8,}' \
+            -e '-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----' \
+            -e 'AKIA[0-9A-Z]{16}' \
+            -e 'ghp_[A-Za-z0-9]{36}' \
+            -e 'xox[bap]-' \
+            --exclude-dir=.git \
+            --exclude-dir=node_modules \
+            --exclude=audited-checks.yml \
+            --exclude=package-lock.json \
+            --exclude=FREE_KEYS_ISSUED.json.example \
+            --exclude=*.yml \
+            . || true)
+          if [ -n "$hits" ]; then
+            echo "$hits"
+            echo "::error::possible secret committed"; exit 1
+          fi
+          echo "no secrets found"

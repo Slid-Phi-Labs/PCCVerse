@@ -1,0 +1,29 @@
+[
+  {
+    "tier": "starting_gate",
+    "name": "ZRW Starting Gate",
+    "amount_usd": 79.0,
+    "url": "https://buy.stripe.com/28EfZic3z69i3P72Wc6wE0b",
+    "product_id": "prod_Uziw0Q94wGxPCB",
+    "price_id": "price_1TzjV1K8JsmXFzvIuF5vFOMw",
+    "plink_id": "plink_1TzjV2K8JsmXFzvI8dH7PUgX"
+  },
+  {
+    "tier": "pro_starter",
+    "name": "ZRW Pro Starter",
+    "amount_usd": 249.0,
+    "url": "https://buy.stripe.com/cNidRaebHbtC71j8gw6wE0c",
+    "product_id": "prod_UziwtAuiIZnqAq",
+    "price_id": "price_1TzjV2K8JsmXFzvIc9ash4S2",
+    "plink_id": "plink_1TzjV3K8JsmXFzvIRrRwR87C"
+  },
+  {
+    "tier": "l33t_unlimited",
+    "name": "ZRW l33t Unlimited",
+    "amount_usd": 699.0,
+    "url": "https://buy.stripe.com/14AeVe9Vr8hqadvbsI6wE0d",
+    "product_id": "prod_Uziwt4zUTHJCGy",
+    "price_id": "price_1TzjV4K8JsmXFzvIRlDtQDZR",
+    "plink_id": "plink_1TzjV4K8JsmXFzvI1Tdw6hmw"
+  }
+]
