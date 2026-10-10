@@ -1,0 +1,8 @@
+TRUSTREAM
+Copyright (c) 2026 Slid Phi Labs / Corey Tasz.
+
+This product is dual-licensed AGPL-3.0-or-later OR the
+Slid Phi Labs Commercial License. See LICENSE.
+
+TRUSTREAM is the live-tile door: 4 KiB tiles (ZERO, MATH, PHRASE, STORE).
+Content never expands; 3 B framing per tile. It is not PCC. It is not TNSSRC.

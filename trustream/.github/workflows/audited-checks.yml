@@ -1,0 +1,52 @@
+name: Audited checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run unit tests (7/7)
+        run: python3 test_trustream.py
+      - name: Demo round-trip
+        run: python3 demo_uberaware_trustream.py
+      - name: Random-input fuzz (never expands, exact round-trip)
+        run: |
+          python3 - <<'EOF'
+          import random
+          import trustream as ts
+          rng = random.Random(0xC10C)
+          for i in range(64):
+              ntiles = rng.randint(1, 4)
+              raw = bytes(rng.randrange(256) for _ in range(ntiles * ts.TILE))
+              stream = ts.encode_stream(raw)
+              assert ts.decode_stream(stream) == raw, f"round-trip failed iter {i}"
+              # framing is a fixed 3 bytes/tile: content must never expand
+              assert len(stream) <= len(raw) + 3 * ntiles, f"expansion iter {i}"
+          print("fuzz ok: 64 random buffers, exact round-trip, never expands")
+          EOF
+
+  secrets-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan for committed secrets
+        run: |
+          set -e
+          echo "Scanning for common secret patterns..."
+          ! grep -rnE "AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|BEGIN [A-Z ]*PRIVATE KEY|sk_(live|test)_[A-Za-z0-9]+|xox[bap]-[A-Za-z0-9-]+|-----BEGIN" \
+            --include="*.py" --include="*.txt" --include="*.md" --include="*.yml" --exclude="audited-checks.yml" .
+          echo "No secrets found."

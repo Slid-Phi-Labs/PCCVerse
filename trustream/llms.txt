@@ -1,0 +1,29 @@
+# trustream
+
+TRUSTREAM is lossless compression for live data streams instead of files, from Slid Phi Labs. Logs, traces, and telemetry are packed in 4 KiB tiles as they arrive (ZERO → MATH → PHRASE → STORE pipeline); quiet stretches shrink, busy stretches pass through stored raw, and a tile's content never encodes larger than its input. Playback returns the original bytes, in order.
+
+## Key facts
+
+- Single Python file (`trustream.py`), no dependencies, Python 3.
+- Frame: [tag:1][tile_len:u16 LE][payload]. Tags: 0x00 ZERO, 0x01 MATH (exact u8 ramps), 0x02 PHRASE (reserved), 0x03 STORE (raw).
+- Round-trip exact; decode verified against SHA of input.
+- License: AGPL-3.0-or-later OR Slid Phi Labs Commercial License.
+- Contact: corey@slidphilabs.com. Lab: https://www.slidphilabs.com
+
+## Links
+
+- Repo: https://github.com/ceedot-rock/trustream
+- Sibling lab products: AwLPay (agent payments), agenTill (agent storefronts), ExactOdds (provably-fair game math), TNSSRC (local compression engine), pulsar (free compressor demo), Chamber (JSON sealing).
+
+## Quick start
+
+```bash
+git clone https://github.com/ceedot-rock/trustream.git && cd trustream
+python3 -c "import trustream"
+```
+
+```python
+import trustream
+packed = trustream.encode_stream(raw_bytes)
+assert trustream.decode_stream(packed) == raw_bytes
+```

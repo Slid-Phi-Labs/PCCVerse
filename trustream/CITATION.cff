@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: trustream
+authors:
+  - family-names: Tasz
+    given-names: Corey
+    email: corey@slidphilabs.com
+    affiliation: Slid Phi Labs
+version: 0.1.0
+date-released: 2026-10-09
+repository-code: "https://github.com/ceedot-rock/trustream"
+url: "https://www.slidphilabs.com"
+license: AGPL-3.0-or-later
+abstract: "Lossless compression for live data streams in 4 KiB tiles (ZERO -> MATH -> PHRASE -> STORE). A tile's content never encodes larger than its input; playback returns the original bytes, in order."
