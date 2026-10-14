@@ -1,7 +1,7 @@
 {
   "name": "zero-range-wave-compression",
-  "version": "5.0.7",
-  "description": "Zero Range Wave (ZRW) v5 — Slid Phi Labs pure-JS integer compressor that beats gzip on zeros, ramps and low-volatility walks. Library + HTTP API + MCP.",
+  "version": "5.1.0",
+  "description": "Zero Range Wave (ZRW) v5.1 \u2014 Slid Phi Labs pure-JS integer compressor that beats gzip on zeros, ramps, walks and periodic sequences. Adaptive Rice-k + LZ-style match tokens. Library + HTTP API + MCP.",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -69,7 +69,7 @@
     "site": "https://www.slidphilabs.com",
     "llms_txt": "https://www.slidphilabs.com/llms.txt",
     "agents_json": "https://www.slidphilabs.com/agents.json",
-    "one_liner": "Free first 1 GB suite · then from $2 min · ~3¢/GB. GET https://www.slidphilabs.com/api/agent. Try Gate retired.",
+    "one_liner": "Free first 1 GB suite \u00b7 then from $2 min \u00b7 ~3\u00a2/GB. GET https://www.slidphilabs.com/api/agent. Try Gate retired.",
     "agent_platform": {
       "cuni": "https://cuni-studio.fly.dev/",
       "agent_rider": "https://agentrider.fly.dev/",

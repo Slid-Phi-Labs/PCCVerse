@@ -143,7 +143,7 @@ async function callTool(name, args = {}) {
   maybeKey(args);
   switch (name) {
     case "zrw_compress": {
-      const packed = compress(args.values, args.k ?? 0);
+      const packed = compress(args.values, args.k);
       return {
         packed: b64(packed),
         bytes: packed.length,
@@ -152,11 +152,11 @@ async function callTool(name, args = {}) {
       };
     }
     case "zrw_decompress": {
-      const values = decompress(fromB64(args.packed), args.k ?? 0);
+      const values = decompress(fromB64(args.packed));
       return { values, n: values.length, license: getLicenseInfo() };
     }
     case "zrw_compress_live": {
-      const packed = compressLive(args.values, { k: args.k ?? 0 });
+      const packed = compressLive(args.values, { k: args.k });
       return {
         packed: b64(packed),
         bytes: packed.length,
@@ -166,7 +166,7 @@ async function callTool(name, args = {}) {
       };
     }
     case "zrw_decompress_live": {
-      const values = decompressLive(fromB64(args.packed), { k: args.k ?? 0 });
+      const values = decompressLive(fromB64(args.packed), { k: args.k });
       return { values, n: values.length, livestream: true, license: getLicenseInfo() };
     }
     case "zrw_license_info":

@@ -179,7 +179,7 @@ const server = http.createServer(async (req, res) => {
       if (!Array.isArray(values)) {
         return json(res, 400, { error: "values: number[] required" });
       }
-      const packed = compress(values, body.k ?? 0);
+      const packed = compress(values, body.k);
       return json(res, 200, {
         packed: toBase64(packed),
         bytes: packed.length,
@@ -191,7 +191,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "POST" && url.pathname === "/v1/decompress") {
       const body = await readBody(req);
       const packed = fromPacked(body.packed);
-      const values = decompress(packed, body.k ?? 0);
+      const values = decompress(packed);
       return json(res, 200, {
         values,
         n: values.length,
