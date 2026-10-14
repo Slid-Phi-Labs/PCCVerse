@@ -1,19 +1,30 @@
 # Zero Range Wave (ZRW) — Pricing & packaging
 
 **Product:** `zero-range-wave-compression` v5  
-**Positioning:** Integer-sequence compressor that **beats gzip/brotli** on zeros, ramps, and walks (see benches below).  
+**Positioning:** Integer-sequence compressor that **beats gzip** on zeros, ramps, and low-volatility walks (see verified benches below).  
 **Publisher account:** `zerorangewave` (npm)
 
 ## Why these prices
 
 Benchmarks (this pack, lossless RT) justify specialty-SDK pricing — not commodity OSS:
 
-| Input | ZRW packed | vs brotli (claimed/README) | vs gzip (claimed) |
-|-------|------------|---------------------------|-------------------|
-| zeros × 1k | **8 B** | 13 B | 39 B |
-| ramp × 1k | **8 B** | 1132 B (**~141×**) | 1436 B |
-| walk × 10k (s1) | **128 B** | — | ~5223 B (**~40×**) |
-| walk × 10k (s5) | **420 B** | — | ~11231 B (**~26×**) |
+| Input | ZRW packed | gzip -9 (verified 2026-10-14) |
+|-------|------------|-------------------------------|
+| zeros × 1k | **8 B** | 55 B (**6.9×**) |
+| ramp × 1k | **8 B** | 1,454 B (**182×**) |
+| repo walk × 10k, step 1 | **128 B** | 13,865 B (**108×**) † |
+| repo walk × 10k, step 5 | **420 B** | 14,099 B (**33.6×**) † |
+| true Gaussian walk × 10k, σ=1 | **3,923 B** | 6,241 B (**1.59×**) |
+| true Gaussian walk × 10k, σ=5 | **17,472 B** | 12,023 B (gzip wins) |
+
+† The repository's bundled "walk" is an LCG ±step sequence whose
+floating-point overflow makes it drift almost entirely upward (82 direction
+changes in 9,998 steps) — effectively a ramp, not a random walk. We report
+it for reproducibility and give true Gaussian-walk figures separately.
+Do not cite "40× on random walks": on a true Gaussian walk (σ=1) the
+measured advantage is ~1.6×; at σ=5 gzip wins. Zeros and ramp figures are
+exact round-trips from the real codec (commit 8c0f227). Brotli comparisons
+were not independently re-verified.
 
 Peers that ship “destroy the baseline” numbers (specialized codecs / analytics SDKs) usually sit **$50–$700** one-time or annual — not $5 freemium.  
 We price **below enterprise codec licenses**, **above** Slid Phi Labs donate ($29.99), aligned with Support-class tools ($199–$699).

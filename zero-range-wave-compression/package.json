@@ -1,7 +1,7 @@
 {
   "name": "zero-range-wave-compression",
   "version": "5.0.7",
-  "description": "Zero Range Wave (ZRW) v5 — Slid Phi Labs pure-JS integer compressor that beats gzip and brotli on zeros, ramps and walks. Library + HTTP API + MCP.",
+  "description": "Zero Range Wave (ZRW) v5 — Slid Phi Labs pure-JS integer compressor that beats gzip on zeros, ramps and low-volatility walks. Library + HTTP API + MCP.",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -40,7 +40,7 @@
     "quikgater"
   ],
   "author": "Slid Phi Labs / ZeroRangeWave",
-  "license": "SEE LICENSE IN PRICING.md",
+  "license": "SEE LICENSE IN LICENSE",
   "homepage": "https://www.slidphilabs.com",
   "repository": {
     "type": "git",
