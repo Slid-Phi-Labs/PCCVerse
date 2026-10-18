@@ -25,10 +25,20 @@ static int16_t W1[HID * F], B1[HID], W2[256 * HID], B2[256];
 static int ready;
 static uint8_t MODEL8[8];
 
+/* Trained riser-v2 tables (src/riser_weights.h, emitted by
+ * train/quantize_riser.py). Absent -> LCG riser-v1 fallback below. */
+#if defined(__has_include) && __has_include("riser_weights.h")
+#include "riser_bind.inc"
+#define RISER_HAVE_TRAINED 1
+#endif
+
 static void sha256_8(const uint8_t *msg, size_t len, uint8_t out8[8]);
 
 static void model_init(void) {
     if (ready) return;
+#ifdef RISER_HAVE_TRAINED
+    riser_load_trained(W1, B1, W2, B2);
+#else
     uint32_t s = 0x52495331u; /* RIS1 */
     for (int i = 0; i < HID * F; i++)
         W1[i] = (int16_t)((int)(lcg_next(&s) % 4915) - 2457); /* ~Q12 * 0.3 */
@@ -38,6 +48,7 @@ static void model_init(void) {
         W2[i] = (int16_t)((int)(lcg_next(&s) % 1639) - 819);
     for (int i = 0; i < 256; i++)
         B2[i] = (int16_t)((int)(lcg_next(&s) % 821) - 410);
+#endif
     sha256_8((const uint8_t *)RISER_MODEL_ID, sizeof RISER_MODEL_ID - 1, MODEL8);
     ready = 1;
 }
