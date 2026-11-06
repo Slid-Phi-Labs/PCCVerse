@@ -1,0 +1,34 @@
+# Build the `npcc` Linux binary (TNSSRC, compressor 2) for hosted benchmarking.
+# Portable x86-64 (no -march=native: the binary must run on any host CPU).
+# Uploads `npcc-x86_64-linux` as a run artifact.
+name: build-npcc
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "neural-pcc/**"
+      - ".github/workflows/build-npcc.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install zlib
+        run: sudo apt-get update && sudo apt-get install -y zlib1g-dev
+      - name: build npcc (portable)
+        working-directory: neural-pcc
+        run: make 'CFLAGS=-O2 -std=c11 -Wall -Wextra -Isrc'
+      - name: smoke test
+        working-directory: neural-pcc
+        run: |
+          ./bin/npcc --version
+          python3 -c "open('/tmp/smoke','w').write('<bill>smoke</bill>\n'*4000)"
+          ./bin/npcc c /tmp/smoke /tmp/smoke.npcc && ./bin/npcc d /tmp/smoke.npcc /tmp/smoke.out && cmp /tmp/smoke /tmp/smoke.out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npcc-x86_64-linux
+          path: neural-pcc/bin/npcc
+          if-no-files-found: error
