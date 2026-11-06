@@ -30,3 +30,10 @@ N → Zeckendorf positions → gaps (≥2) → rANS over gap frequencies
 
 - Public under `ceedot-rock/s2s6-ans-gaps`
 - Standalone HTML (no React bundle); same math and benchmark numbers as the original S2S6 artifact
+
+## Status
+
+Demo only. The interactive page above is a visualization, not a usable
+codec: there is no codec API here (no library to import, no
+encode/decode functions to call). Do not present or depend on it as a
+compressor.

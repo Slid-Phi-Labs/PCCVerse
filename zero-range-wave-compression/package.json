@@ -16,7 +16,7 @@
     "PRICING.md"
   ],
   "scripts": {
-    "test": "node -e \"import('./index.js').then(m => { const z=Array(10000).fill(0); const p=m.compress(z); const b=m.decompress(p); if(b.length!==10000) throw new Error('rt'); console.log('zrw public', p.length); })\""
+    "test": "node --test test/ && node -e \"import('./index.js').then(m => { const z=Array(10000).fill(0); const p=m.compress(z); const b=m.decompress(p); if(b.length!==10000) throw new Error('rt'); console.log('zrw public', p.length); })\""
   },
   "keywords": [
     "slid phi labs",

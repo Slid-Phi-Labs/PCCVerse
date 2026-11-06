@@ -240,7 +240,8 @@ const server = http.createServer(async (req, res) => {
       ],
     });
   } catch (e) {
-    const status = e.status || (String(e.message || "").includes("ZRW:") ? 402 : 500);
+    const msg = String(e.message || "");
+    const status = e.status || (/corrupt/i.test(msg) ? 400 : msg.includes("ZRW:") ? 402 : 500);
     return json(res, status, {
       error: e.message || String(e),
       pricing: PRICING,

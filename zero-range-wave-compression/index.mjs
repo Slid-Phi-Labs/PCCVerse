@@ -54,6 +54,8 @@ function packBits(bits,k){
   return n;
 }
 function unpackBits(u){
+  if(!(u instanceof Uint8Array)) throw new TypeError("ZRW: corrupt input (expected Uint8Array)");
+  if(u.byteLength<4) throw new Error("ZRW: corrupt input (truncated header)");
   const dv=new DataView(u.buffer,u.byteOffset,u.byteLength);
   let k=0, off=4;
   if(u.byteLength>=8 && u[0]===0x5A && u[1]===0x57 && u[2]===0x02){
@@ -63,6 +65,7 @@ function unpackBits(u){
     if(k2<=3 && 8+Math.ceil(len2/8)===u.byteLength){ k=k2; off=8; }
   }
   const len=dv.getUint32(off===8?4:0,true);
+  if(off+Math.ceil(len/8)>u.byteLength) throw new Error("ZRW: corrupt input (declared bit-length exceeds buffer)");
   const out=[]; for(let i=0;i<len;i++) out.push((u[off+(i>>3)]>>(i&7))&1);
   return {bits:out, k};
 }
@@ -218,7 +221,7 @@ class ZeroRangeWave{
   }
   decodeBits(bits){
     if(!bits.length) return [];
-    const first=decodeIntAt(bits,0); if(!first) return [];
+    const first=decodeIntAt(bits,0); if(!first) throw new Error("ZRW: corrupt stream (undecodable first value)");
     const out=[first.val]; let pos=first.end, r=first.val, o=first.val;
     while(pos<bits.length){
       let node=this.trie, op=null;
@@ -228,31 +231,41 @@ class ZeroRangeWave{
         node=node[b]; pos++;
         if('_op' in node){op=node._op; break;}
       }
-      if(!op) break;
+      if(!op) throw new Error("ZRW: corrupt stream (unknown op code)");
       if(op==='RUN_ESC'){
-        if(pos+1>=bits.length) break;
+        if(pos+1>=bits.length) throw new Error("ZRW: corrupt stream (truncated run header)");
         const tbits = `${bits[pos]}${bits[pos+1]}`;
         const rtype = RUN_TYPE_REV[tbits];
-        if(!rtype) break;
+        if(!rtype) throw new Error("ZRW: corrupt stream (bad run type)");
         pos+=2;
-        const cntInfo=decodeOneFibAt(bits,pos); if(!cntInfo) break; pos=cntInfo.end; const cnt=cntInfo.val;
+        const cntInfo=decodeOneFibAt(bits,pos);
+        if(!cntInfo) throw new Error("ZRW: corrupt stream (bad run count)");
+        pos=cntInfo.end; const cnt=cntInfo.val;
         if(rtype==='repeat'){ for(let i=0;i<cnt;i++) out.push(r); }
         else if(rtype==='inc'){ for(let i=0;i<cnt;i++){ o=r; r+=1; out.push(r); } }
         else if(rtype==='dec'){ for(let i=0;i<cnt;i++){ o=r; r-=1; out.push(r); } }
         else if(rtype==='d2'){ for(let i=0;i<cnt;i++){ const v=2*r-o; o=r; r=v; out.push(r); } }
       } else if(op==='match'){
-        const di=decodeOneFibAt(bits,pos); if(!di) break; pos=di.end;
-        const li=decodeOneFibAt(bits,pos); if(!li) break; pos=li.end;
+        const di=decodeOneFibAt(bits,pos);
+        if(!di) throw new Error("ZRW: corrupt stream (bad match distance)");
+        pos=di.end;
+        const li=decodeOneFibAt(bits,pos);
+        if(!li) throw new Error("ZRW: corrupt stream (bad match length)");
+        pos=li.end;
         const dist=di.val, len=li.val;
-        if(dist<2||len<MATCH_MIN_LEN||dist>out.length) break;
+        if(dist<2||len<MATCH_MIN_LEN||dist>out.length) throw new Error("ZRW: corrupt stream (bad match)");
         for(let j=0;j<len;j++) out.push(out[out.length-dist]);  // memmove: overlap-safe
         o=out[out.length-2]; r=out[out.length-1];
       } else if(op==='repeat'){ out.push(r); }
       else if(op==='inc'){ o=r; r+=1; out.push(r); }
       else if(op==='dec'){ o=r; r-=1; out.push(r); }
       else if(op==='d2'){ const v=2*r-o; o=r; r=v; out.push(r); }
-      else if(op==='rice'){ const d=decodeRiceAt(bits,pos,this.k); if(!d) break; pos=d.end; const delta=unzigzag(d.val); const pred=out.length>=2?2*r-o:r; const v=pred+delta; out.push(v); o=r; r=v; }
-      else if(op==='normal'){ const d=decodeIntAt(bits,pos); if(!d) break; out.push(d.val); o=r; r=d.val; pos=d.end; }
+      else if(op==='rice'){ const d=decodeRiceAt(bits,pos,this.k);
+        if(!d) throw new Error("ZRW: corrupt stream (truncated rice)");
+        pos=d.end; const delta=unzigzag(d.val); const pred=out.length>=2?2*r-o:r; const v=pred+delta; out.push(v); o=r; r=v; }
+      else if(op==='normal'){ const d=decodeIntAt(bits,pos);
+        if(!d) throw new Error("ZRW: corrupt stream (bad literal)");
+        pos=d.end; out.push(d.val); o=r; r=d.val; }
     }
     return out;
   }
@@ -325,6 +338,7 @@ export function compress(arr, k = "auto") {
 /** @param {Uint8Array} packed @param {number} [k] */
 export function decompress(packed, k = undefined) {
   assertLicense({ op: "decompress", n: 0, livestream: false });
+  if(!(packed instanceof Uint8Array)) throw new TypeError("ZRW: corrupt input (expected Uint8Array)");
   // v2: k travels in the stream header (auto-detected). Pass an explicit k
   // only to decode legacy v1 streams that were encoded with a fixed k != 0.
   return new ZeroRangeWave().decode(packed, k);
@@ -345,6 +359,7 @@ export function compressLive(chunk, opts = {}) {
 
 export function decompressLive(packed, opts = {}) {
   assertLicense({ op: "decompressLive", n: 0, livestream: true });
+  if(!(packed instanceof Uint8Array)) throw new TypeError("ZRW: corrupt input (expected Uint8Array)");
   return new ZeroRangeWave().decode(packed, opts.k);
 }
 
