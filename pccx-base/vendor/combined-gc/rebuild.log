@@ -1,0 +1,81 @@
+   Compiling clap_builder v4.4.18
+   Compiling divsufsort v2.0.0
+   Compiling flate2 v1.0.28
+   Compiling clap v4.4.18
+   Compiling anyhow v1.0.86
+   Compiling xxhash-rust v0.8.10
+   Compiling combined-gc v1.19.2 (/home/workdir/artifacts/combined-gc)
+warning: variable does not need to be mutable
+  --> src/ans.rs:44:13
+   |
+44 |         let mut start = [0u32; 256];
+   |             ----^^^^^
+   |             |
+   |             help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: variable does not need to be mutable
+  --> src/wrt_dict.rs:24:20
+   |
+24 | pub fn idx_to_code(mut idx: usize) -> String {
+   |                    ----^^^
+   |                    |
+   |                    help: remove this `mut`
+
+warning: unused variable: `offset_within_len`
+  --> src/wrt_dict.rs:60:13
+   |
+60 |     let mut offset_within_len = 0usize;
+   |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_offset_within_len`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `l`
+  --> src/wrt_dict.rs:76:9
+   |
+76 |     for l in 1..len {
+   |         ^ help: if this is intentional, prefix it with an underscore: `_l`
+
+warning: variable does not need to be mutable
+  --> src/wrt_dict.rs:60:9
+   |
+60 |     let mut offset_within_len = 0usize;
+   |         ----^^^^^^^^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+
+warning: unused variable: `path`
+  --> src/analyzer_full.rs:27:21
+   |
+27 | pub fn analyze_file(path: &str, block_size: usize) -> Vec<BlockStats> {
+   |                     ^^^^ help: if this is intentional, prefix it with an underscore: `_path`
+
+warning: unused variable: `block_size`
+  --> src/analyzer_full.rs:27:33
+   |
+27 | pub fn analyze_file(path: &str, block_size: usize) -> Vec<BlockStats> {
+   |                                 ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_block_size`
+
+warning: constant `BOT` is never used
+  --> src/cm.rs:10:7
+   |
+10 | const BOT: u32 = 1 << 16;
+   |       ^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: function `lower_ascii` is never used
+  --> src/wrt_dict.rs:88:4
+   |
+88 | fn lower_ascii(s: &str) -> String {
+   |    ^^^^^^^^^^^
+
+warning: constant `MASK_2048` is never used
+ --> src/ans_scale.rs:7:7
+  |
+7 | const MASK_2048: u64 = 2047;
+  |       ^^^^^^^^^
+
+warning: `combined-gc` (lib) generated 10 warnings (run `cargo fix --lib -p combined-gc` to apply 7 suggestions)
+    Finished release [optimized] target(s) in 23.87s
