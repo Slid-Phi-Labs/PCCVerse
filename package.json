@@ -1,0 +1,17 @@
+{
+  "name": "pccverse",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PCCVerse verse-level workspace: one test command across the JS modules. Rust/Python modules are tested directly by CI (see .github/workflows/verse.yml).",
+  "type": "module",
+  "workspaces": [
+    "swarm-smart",
+    "zero-range-wave-compression"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

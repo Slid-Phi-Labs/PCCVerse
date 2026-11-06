@@ -34,6 +34,23 @@ Credit: **Powered by TRU8 · Slid Phi Labs**
 
 Gate Year ($790) is the mixed-file SKU. This repo is the residual membrane + demos.
 
+## Not a codec — in-session replay only
+
+`ingest` returns an `imprint` number, but the imprint is a **session
+handle, not a compressed bitstream**. The source bytes (plus a decode
+closure over the routed existing engine's payload) stay in the live
+swarm members' process memory, and `replayFromMemory(machine, imprint)`
+replays that same session's memory. A fresh machine, a restarted
+process, or a bare imprint number copied from elsewhere **cannot**
+reproduce the bytes — it throws. The old name `restore` was removed
+because it sounded like a codec decode step.
+
+What IS portable: the `payload` + `engine` fields returned by `ingest`
+(zrw / gzip-9 / brotli-11 / rdom / stroke-ls), decodable with that
+existing engine. What is NOT portable: the `imprint`.
+
+Boundary pinned by [`test/memory-boundary.test.js`](test/memory-boundary.test.js).
+
 ## Black box
 
 24-hour eval on first run (`~/.swarm-smart/blackbox.json`). Demos stay free. Production residual is a paid seat — Lab Pass $1,088 or TRU8 Year $990.

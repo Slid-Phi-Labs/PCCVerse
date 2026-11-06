@@ -1,5 +1,5 @@
 /**
- * Existing lab engines Capture may emulate.
+ * Existing lab engines whose payloads Capture may replay from live memory.
  * ZRW v5 for structured ints. Bake-off (brotli / gzip / stroke-ls) otherwise.
  */
 import zlib from "node:zlib";

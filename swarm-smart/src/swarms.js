@@ -1,7 +1,9 @@
 /**
  * Capture / Routing / Memory.
- * Capture members are decompress emulators: they hold the flash imprint
- * and replay lattice + cloak + residual to restore bytes.
+ * Capture members are in-session replay holders: they keep the live
+ * flash imprint, residual fields, and decode closures in process memory
+ * so the SAME session can replay the source bytes. They are NOT decoders
+ * and an imprint number is NOT a portable bitstream.
  * Every member can mimic DNA loci .1 .2 .3.
  */
 import { LOCUS, LOCUS_NAME, makeDna, face, allele } from "./dna.js";
@@ -73,8 +75,14 @@ export function imprintCapture(swarms, pulse, grads, meta) {
   return { imprint: pulse.imprint, route, heat: pulse.heat };
 }
 
-/** Capture swarm as decompress emulator — existing engine if routed, else flash residual. */
-export function emulate(swarms, imprint, steps = 3) {
+/**
+ * Replay bytes from the SAME live session's capture memory — existing
+ * engine decode closure if routed, else flash residual re-application.
+ * Throws unless `imprint` matches an imprint held by this process's
+ * swarm (unknown / cross-session / serialized-only imprints fail).
+ * This is memory replay, NOT bitstream decoding.
+ */
+export function replayCapture(swarms, imprint, steps = 3) {
   const cap = swarms.capture.find((m) => m.imprint === imprint) || swarms.capture[0];
   if (!cap) throw new Error("capture swarm has no imprint");
   if (imprint != null && cap.imprint !== imprint) throw new Error("imprint mismatch");

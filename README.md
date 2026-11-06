@@ -17,6 +17,16 @@ or refuse the claim.
 | aware-frame-v4 | `aware-frame-v4/` | Adaptive residual compression R&D (Theoretical Engine, ProgramBank). |
 | s2s6-ans-gaps | `s2s6-ans-gaps/` | Zeckendorf/Tribonacci gap encoding + ANS entropy coding demo. |
 
+## Verse tooling
+
+- Root `package.json`: npm workspaces over the JS modules
+  (`swarm-smart`, `zero-range-wave-compression`) — `npm test` runs them all.
+- `.github/workflows/verse.yml`: runs every module's tests (node
+  workspaces, Python suites, neural-pcc C tests, Rust crates).
+- `aware-frame-v4` is excluded from workspaces and CI: EXPERIMENTAL-broken,
+  does not compile (see its README). `s2s6-ans-gaps` is demo-only and has
+  no tests.
+
 ## Provenance
 
 Fused from ten repos with full history preserved (merge commits, not

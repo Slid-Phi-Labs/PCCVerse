@@ -3,12 +3,14 @@
  *      ← Cloak   (system-aware NCA, same university)
  * flash (residual + white noise) heats and imprints Capture
  * Routing + Memory swarms share the imprint
- * mirror: restore must equal source
+ * In-session replay only: replayFromMemory must equal source on the SAME
+ * live machine. There is no bitstream decoder here — an imprint is a
+ * session handle, not a codec frame.
  */
 import { makeField, stepField, shapeFor } from "./nca.js";
 import { graduate } from "./university.js";
 import { makeFlash } from "./flash.js";
-import { spawn, imprintCapture, emulate, mimicAll, roster } from "./swarms.js";
+import { spawn, imprintCapture, replayCapture, mimicAll, roster } from "./swarms.js";
 import { routeExisting } from "./existing.js";
 
 export function boot(opts = {}) {
@@ -41,7 +43,7 @@ export async function ingest(machine, bytes) {
     recipe: existing,
   });
 
-  const restored = emulate(machine.swarms, stamp.imprint, steps);
+  const restored = replayCapture(machine.swarms, stamp.imprint, steps);
   const miss = mirrorMiss(u8, restored);
   const ok = miss === 0 && existing.rt;
   machine.last = {
@@ -59,11 +61,19 @@ export async function ingest(machine, bytes) {
   return { ok, ...machine.last, raw: u8.length };
 }
 
-export function restore(machine, imprint) {
+/**
+ * Replay the source bytes for `imprint` from THIS machine's live swarm
+ * memory. Requires the same session that ran `ingest`: a fresh machine,
+ * a restarted process, or a bare imprint number copied from elsewhere
+ * CANNOT reproduce the bytes (throws). Not a codec decode step — for the
+ * portable compressed payload see the `payload`/`engine` fields returned
+ * by `ingest`, decodable with the routed existing engine (zrw/gzip/brotli).
+ */
+export function replayFromMemory(machine, imprint) {
   if (machine.last && machine.last.cloak_open === false) {
     return { ok: false, error: "cloak-hold" };
   }
-  const bytes = emulate(machine.swarms, imprint);
+  const bytes = replayCapture(machine.swarms, imprint);
   return { ok: true, bytes };
 }
 

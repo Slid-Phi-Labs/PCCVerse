@@ -3,7 +3,7 @@ import { readFileSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { boot, ingest, restore, faceAll } from "./src/machine.js";
+import { boot, ingest, replayFromMemory, faceAll } from "./src/machine.js";
 import { gateStatus } from "./src/blackbox.js";
 import { openSplb, statusFromBox, defaultBoxPath, extract } from "./src/splb.js";
 
@@ -59,13 +59,13 @@ if (cmd === "demo") {
   ];
   for (const [name, buf] of samples) {
     const r = await ingest(m, buf);
-    const back = restore(m, r.imprint);
+    const back = replayFromMemory(m, r.imprint);  // same-session memory replay, not a decode
     const same = back.ok && back.bytes.equals(buf);
     console.log(
       name.padEnd(16),
       (r.vector + "/" + r.engine).padEnd(22),
       `${r.raw}→${r.packed}`.padEnd(14),
-      same ? "MIRROR" : `MISS ${r.miss}`,
+      same ? "REPLAY-OK (in-session memory)" : `MISS ${r.miss}`,
     );
   }
   console.log("face all .2 (route):", faceAll(m, 2).map((x) => `${x.kind}:${x.locus}`).join(" "));
@@ -74,7 +74,7 @@ if (cmd === "demo") {
 
 console.log(`swarm-smart
   node cli.js run              # open signed box, HALT if tampered, run demo
-  node cli.js demo             # raw demo (same bits the box contains)
+  node cli.js demo             # raw demo (replays live session memory; not a codec decode)
   node cli.js ingest <file>
   node cli.js gate [box.splb]
 `);

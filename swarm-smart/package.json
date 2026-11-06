@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "Slid Phi Labs residual + swarm demo. Beats gzip on Calgary text. Not #1 GC. 24h black box.",
+  "description": "Slid Phi Labs residual + swarm demo (in-session replay; not a portable codec). Beats gzip on Calgary text. Not #1 GC. 24h black box.",
   "scripts": {
-    "test": "node test.js",
+    "test": "node test.js && node --test test/",
     "demo": "node cli.js demo",
     "gate": "node cli.js gate",
     "bench": "node bench-dominant.js"

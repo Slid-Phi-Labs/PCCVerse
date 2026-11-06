@@ -1,0 +1,79 @@
+# Verse CI — every module's tests, one workflow.
+#
+# aware-frame-v4 is EXCLUDED on purpose: EXPERIMENTAL-broken, does not
+# compile (see aware-frame-v4/README.md — src/lib.rs declares modules with
+# no files on disk, missing primitives/mod.rs, undefined
+# apply_compression_pipeline). Quarantined: keep it out of workspaces and
+# CI until real implementations land. Do NOT add it back to silence this.
+#
+# s2s6-ans-gaps is demo-only (self-contained HTML visualization, no codec
+# API, no test runner) and is intentionally not a CI job either.
+#
+# swarm-nca has no package.json (TS lab files only), so it is not an npm
+# workspace member; CI runs its Python twin's self-test instead.
+
+name: verse
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  node-workspaces:
+    name: JS workspaces (npm test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run every workspace test (swarm-smart, zero-range-wave-compression)
+        run: npm run test --workspaces --if-present
+
+  python-modules:
+    name: Python suites (trustream, swarm-nca, neural-pcc)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: trustream tile/stream tests
+        working-directory: trustream
+        run: python3 test_trustream.py
+      - name: swarm-nca self-test (no-arg lossless roundtrips)
+        working-directory: swarm-nca
+        run: python3 swarm_nca.py
+      - name: neural-pcc Python roundtrips
+        working-directory: neural-pcc
+        run: python3 tests/test_npcc.py
+
+  c-module:
+    name: C tests (neural-pcc make test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build deps
+        run: sudo apt-get update -y && sudo apt-get install -y build-essential zlib1g-dev
+      - name: Build and run C tests
+        working-directory: neural-pcc
+        run: make test
+
+  rust-modules:
+    name: Rust tests (pccx-base, pccx-handlers, pulsar-best)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: pccx-base
+        run: cargo test --manifest-path pccx-base/Cargo.toml
+      - name: pccx-handlers
+        run: cargo test --manifest-path pccx-handlers/pccx-crate/Cargo.toml
+      - name: pulsar-best
+        run: cargo test --manifest-path pulsar-best/Cargo.toml
+      # NOTE: no aware-frame-v4 job — EXPERIMENTAL-broken, excluded (see header).
