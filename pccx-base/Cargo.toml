@@ -6,9 +6,6 @@ license = "UNLICENSED"
 publish = false
 description = "PCCX closed crate. Pulsar + Combined GC in-tree. PCC1 frame."
 
-[[bin]]
-name = "pccx"
-path = "src/bin/pccx.rs"
 
 [profile.release]
 lto = "thin"
