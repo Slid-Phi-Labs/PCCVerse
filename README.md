@@ -22,7 +22,12 @@ or refuse the claim.
 - Root `package.json`: npm workspaces over the JS modules
   (`swarm-smart`, `zero-range-wave-compression`) — `npm test` runs them all.
 - `.github/workflows/verse.yml`: runs every module's tests (node
-  workspaces, Python suites, neural-pcc C tests, Rust crates).
+  workspaces, Python suites, neural-pcc C tests, Rust crates, verse
+  benchmark, and fuzz/property round-trips).
+- [docs/BENCHMARKS.md](docs/BENCHMARKS.md): honest verse benchmark --
+  compressed size + time vs gzip on in-repo corpora for trustream,
+  neural-pcc, swarm-nca, and zero-range-wave
+  (`python3 bench/roundtrip.py`).
 - `aware-frame-v4` is excluded from workspaces and CI: EXPERIMENTAL-broken,
   does not compile (see its README). `s2s6-ans-gaps` is demo-only and has
   no tests.

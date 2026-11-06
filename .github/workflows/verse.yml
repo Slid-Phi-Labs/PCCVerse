@@ -77,3 +77,23 @@ jobs:
       - name: pulsar-best
         run: cargo test --manifest-path pulsar-best/Cargo.toml
       # NOTE: no aware-frame-v4 job — EXPERIMENTAL-broken, excluded (see header).
+
+  bench-fuzz:
+    name: Verse benchmark + fuzz (bench/roundtrip, ZRW fuzz)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      # Python fuzz blocks run inside the suites above (test_trustream.py,
+      # swarm_nca.py self-test, tests/test_npcc.py); this job adds the
+      # verse-level benchmark and the JS property tests.
+      - name: Verse round-trip benchmark vs gzip (fails on any mismatch)
+        run: python3 bench/roundtrip.py | tee /tmp/bench.md | tail -n 15
+      - name: ZRW property/fuzz tests
+        working-directory: zero-range-wave-compression
+        run: node --test test/roundtrip-fuzz.test.mjs

@@ -79,6 +79,42 @@ def test_phrase_reserved():
         raise AssertionError("PHRASE silently accepted")
 
 
+
+# --- FUZZ-BLOCK: property roundtrips (verse bench harness) ---
+def test_fuzz_random_bytes_roundtrip():
+    rng = random.Random(0xF02)
+    for trial in range(60):
+        n = rng.randrange(0, 9000)
+        raw = bytes(rng.randrange(256) for _ in range(n))
+        assert ts.decode_stream(ts.encode_stream(raw)) == raw, trial
+    # adversarial shapes: edges of the 4KiB tile grid
+    for n in (0, 1, 4095, 4096, 4097, 8192, 8193):
+        raw = bytes(rng.randrange(256) for _ in range(n))
+        assert ts.decode_stream(ts.encode_stream(raw)) == raw, n
+    print("ok fuzz: 60 random + tile-edge roundtrips")
+
+
+def test_fuzz_corrupt_input_refuses():
+    rng = random.Random(0xBAD)
+    # truncations of every length class must raise, never return partial
+    raw = bytes(rng.randrange(256) for _ in range(5000))
+    stream = ts.encode_stream(raw)
+    for cut in (1, 2, 3, 4, 5, len(stream) // 2, len(stream) - 1):
+        try:
+            ts.decode_stream(stream[:cut])
+        except (ValueError, NotImplementedError):
+            pass
+        else:
+            raise AssertionError("truncated stream accepted (cut=%d)" % cut)
+    # unknown tag forged into a real header is refused
+    bad = bytearray(stream)
+    bad[0] = 0x09
+    try:
+        ts.decode_stream(bytes(bad))
+    except (ValueError, NotImplementedError):
+        print("ok fuzz: truncations/forged-tag refused")
+    else:
+        raise AssertionError("forged tag accepted")
 def main() -> int:
     test_zero_tile_shrinks()
     test_ramp_tile_shrinks()
@@ -87,6 +123,8 @@ def main() -> int:
     test_never_expand_content()
     test_corrupt_stream_rejected()
     test_phrase_reserved()
+    test_fuzz_random_bytes_roundtrip()
+    test_fuzz_corrupt_input_refuses()
     print("ALL TRUSTREAM TESTS PASSED")
     return 0
 

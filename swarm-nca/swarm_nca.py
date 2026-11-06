@@ -369,8 +369,10 @@ def encode(data: bytes, steps: int = 3, window_mode: str = "chained") -> bytes:
         seen[key] = idx
         origin = idx * CHUNK
         hist = data[max(0, origin - win) : origin] if chained and origin else b""
-        if not chained:
-            last_off = 0
+        # Chunk frames are self-describing: a repeat-offset match
+        # (0b111) must never open a chunk, or decode reads it as
+        # a clone marker.
+        last_off = 0
         last_off = pack(parse_tags(chunk, steps, hist, win), chunk, w, last_off)
     header = bytearray(14)
     header[0:4] = MAGIC
@@ -405,13 +407,64 @@ def decode(blob: bytes) -> bytes:
             last_off = 0
         else:
             r.i = saved
-            if not chained:
-                last_off = 0
+            last_off = 0  # mirror of the encoder-side reset above
             last_off = unpack(r, out, offset, n, last_off)
             piece = bytes(out[offset : offset + n])
         prior.append(bytes(piece) if not isinstance(piece, (bytes, bytearray)) else bytes(piece))
         offset += n
     return bytes(out)
+
+
+def _fuzz_self_test() -> None:
+    """FUZZ-BLOCK (verse bench harness): seeded random roundtrips over sizes
+    spanning 1-3 chunks x steps {1, 3} x windows {isolated, chained}, plus
+    corrupt-input refusal and the chunk-boundary repeat/clone regression
+    (a chunk opening with a repeat-offset match must not decode as a
+    clone marker)."""
+    import random as _random
+
+    rng = _random.Random(0xF02)
+    sizes = [0, 1, 7, 100, 1000, 4095, 4096, 4097, 5000, 8192, 9000, 12500]
+    for n in sizes:
+        payload = bytes(rng.randrange(256) for _ in range(n))
+        for steps in (1, 3):
+            for window in ("isolated", "chained"):
+                back = decode(encode(payload, steps=steps, window_mode=window))
+                assert back == payload, (n, steps, window)
+    # zero-heavy adversarial shapes (repeat-offset heavy)
+    for trial in range(10):
+        parts = []
+        for _ in range(1 + rng.randrange(5)):
+            parts += [0] * rng.randrange(9)
+            parts.append(rng.randrange(256))
+        payload = bytes(parts) * (1 + rng.randrange(3))
+        for window in ("isolated", "chained"):
+            assert decode(encode(payload, window_mode=window)) == payload
+    # corrupt input refuses: truncations, garbage, bad magic
+    payload = bytes(rng.randrange(256) for _ in range(5000))
+    blob = encode(payload)
+    for cut in (0, 1, 5, 13, 14, 15, len(blob) // 2, len(blob) - 1):
+        try:
+            decode(blob[:cut])
+        except Exception:
+            pass
+        else:
+            raise AssertionError("truncated blob accepted (cut=%d)" % cut)
+    for trial in range(20):
+        junk = bytes(rng.randrange(256) for _ in range(rng.randrange(0, 30)))
+        try:
+            decode(junk)
+        except Exception:
+            pass
+        else:
+            raise AssertionError("garbage accepted (trial=%d)" % trial)
+    try:
+        decode(b"XXXX" + blob[4:])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("bad magic accepted")
+    print("fuzz  random/chunk-edge/corrupt roundtrips OK")
 
 
 def _demo(payload: bytes, label: str = "", window_mode: str = "chained") -> None:
@@ -468,6 +521,7 @@ def main(argv: Optional[Iterable[str]] = None) -> None:
         for payload, label in fixtures:
             _demo(payload, label, "isolated")
             _demo(payload, label, "chained")
+        _fuzz_self_test()
         return
 
     data = open(args.path, "rb").read()

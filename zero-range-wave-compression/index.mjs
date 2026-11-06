@@ -32,10 +32,22 @@ function zigzag(e){return e>=0?2*e:-2*e-1}
 function unzigzag(e){return (e&1)?-((e+1)>>1):(e>>1)}
 function encodeRiceBits(e,k){const q=e>>>k, r=e&((1<<k)-1); const o=[]; for(let i=0;i<q;i++)o.push(0); o.push(1); for(let i=0;i<k;i++)o.push((r>>i)&1); return o}
 function decodeRiceAt(bits,pos,k){let p=pos,q=0; while(p<bits.length&&bits[p]===0){q++;p++;} if(p>=bits.length||bits[p]!==1)return null; p++; let r=0; for(let i=0;i<k;i++){if(p>=bits.length)return null; if(bits[p])r|=(1<<i); p++;} return {val:(q<<k)|r,end:p}}
-function encodeIntBits(e){ if(Number.isSafeInteger(e)&&e>=0&&e<=10000) return (ENCODE_LUT[e]||encodeFibBits(e)).slice(); return [1,1,1,1,1,1,0, ...encodeOmegaBits(e)]; }
+// NOTE: the encoder always uses Fib, for every non-negative safe integer.
+// The old omega escape ([1x6,0, ...]) is retired: it was never decodable
+// (decoder looked for a different prefix), so no working stream contains
+// it -- while that prefix IS forgeable across a Fib-literal boundary
+// (literal 0 = [1,1] + normal opcode = [1,1,1,1,1,0]), which silently broke
+// ~1% of random byte streams. encodeOmegaBits/decodeOmegaAt stay only as
+// a decode-compatibility fallback below. Negative inputs were never
+// round-tripped (omega clamped them); they remain unsupported.
+function encodeIntBits(e){ return (ENCODE_LUT[e]||encodeFibBits(e)).slice(); }
 function encodeOmegaBits(e){let t=e+1; if(t<1)t=1; let n=[0]; while(t>1){const cur=[]; let r=t; while(r>0){cur.unshift(r&1); r=Math.floor(r/2)} n=cur.concat(n); t=cur.length-1} return n;}
 function decodeOmegaAt(bits,pos){let p=pos, len=1; while(p<bits.length&&bits[p]===1){ if(p+len+1>bits.length)return null; let v=0; for(let i=0;i<len+1;i++) v=(v<<1)|bits[p+i]; p+=len+1; len=v } if(p>=bits.length||bits[p]!==0) return null; p++; return {val:len-1,end:p}}
-function decodeIntAt(bits,pos){ if(pos+8<=bits.length&&bits[pos]===1&&bits[pos+1]===1&&bits[pos+2]===1&&bits[pos+3]===1&&bits[pos+4]===1&&bits[pos+5]===1&&bits[pos+6]===1&&bits[pos+7]===0){ const o=decodeOmegaAt(bits,pos+8); if(o) return o; } return decodeOneFibAt(bits,pos);}
+// Fib is tried FIRST: the encoder only emits Fib, and a Fib parse can
+// never be fooled by the forged omega prefix (literal 0 + normal opcode),
+// because the Fib codeword [1,1] parses first and consumes just itself.
+// The omega branch below is decode-compatibility fallback only.
+function decodeIntAt(bits,pos){ const f=decodeOneFibAt(bits,pos); if(f) return f; if(pos+8<=bits.length&&bits[pos]===1&&bits[pos+1]===1&&bits[pos+2]===1&&bits[pos+3]===1&&bits[pos+4]===1&&bits[pos+5]===1&&bits[pos+6]===1&&bits[pos+7]===0){ const o=decodeOmegaAt(bits,pos+8); if(o) return o; } return null; }
 
 // ---- stream headers ----
 // v1: u32 LE bit-length + bits (original format, k=0)
@@ -241,6 +253,7 @@ class ZeroRangeWave{
         const cntInfo=decodeOneFibAt(bits,pos);
         if(!cntInfo) throw new Error("ZRW: corrupt stream (bad run count)");
         pos=cntInfo.end; const cnt=cntInfo.val;
+        if(cnt>4294967295-out.length) throw new Error("ZRW: corrupt stream (run exceeds addressable output)");
         if(rtype==='repeat'){ for(let i=0;i<cnt;i++) out.push(r); }
         else if(rtype==='inc'){ for(let i=0;i<cnt;i++){ o=r; r+=1; out.push(r); } }
         else if(rtype==='dec'){ for(let i=0;i<cnt;i++){ o=r; r-=1; out.push(r); } }
@@ -254,6 +267,7 @@ class ZeroRangeWave{
         pos=li.end;
         const dist=di.val, len=li.val;
         if(dist<2||len<MATCH_MIN_LEN||dist>out.length) throw new Error("ZRW: corrupt stream (bad match)");
+        if(len>4294967295-out.length) throw new Error("ZRW: corrupt stream (match exceeds addressable output)");
         for(let j=0;j<len;j++) out.push(out[out.length-dist]);  // memmove: overlap-safe
         o=out[out.length-2]; r=out[out.length-1];
       } else if(op==='repeat'){ out.push(r); }
