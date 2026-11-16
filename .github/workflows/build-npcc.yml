@@ -27,7 +27,7 @@ jobs:
           ./bin/npcc --version
           python3 -c "open('/tmp/smoke','w').write('<bill>smoke</bill>\n'*4000)"
           ./bin/npcc c /tmp/smoke /tmp/smoke.npcc && ./bin/npcc d /tmp/smoke.npcc /tmp/smoke.out && cmp /tmp/smoke /tmp/smoke.out
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: npcc-x86_64-linux
           path: neural-pcc/bin/npcc
