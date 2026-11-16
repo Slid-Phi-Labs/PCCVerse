@@ -28,7 +28,7 @@ jobs:
     name: JS workspaces (npm test)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -39,7 +39,7 @@ jobs:
     name: Python suites (trustream, swarm-nca, neural-pcc)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -57,7 +57,7 @@ jobs:
     name: C tests (neural-pcc make test)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install build deps
         run: sudo apt-get update -y && sudo apt-get install -y build-essential zlib1g-dev
       - name: Build and run C tests
@@ -68,7 +68,7 @@ jobs:
     name: Rust tests (pccx-base, pccx-handlers, pulsar-best)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - name: pccx-base
         run: cargo test --manifest-path pccx-base/Cargo.toml
@@ -82,7 +82,7 @@ jobs:
     name: Verse benchmark + fuzz (bench/roundtrip, ZRW fuzz)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
