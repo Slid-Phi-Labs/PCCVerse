@@ -6,7 +6,7 @@ description = "Aware Frame WAVE 4 - Adaptive multi-stage compression for Slid Ph
 authors = ["Slid Phi Labs"]
 
 [dependencies]
-rand = "0.8"
+rand = "0.10"
 xxhash-rust = { version = "0.8", features = ["xxh3"] }
 
 [profile.release]
