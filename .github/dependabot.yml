@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directory: "/aware-frame-v4"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directory: "/neural-pcc/strand"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directory: "/pccx-base"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directory: "/pccx-handlers/pccx-crate"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directory: "/pulsar-best"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
