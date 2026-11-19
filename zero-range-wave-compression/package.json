@@ -16,7 +16,7 @@
     "PRICING.md"
   ],
   "scripts": {
-    "test": "node --test test/ && node -e \"import('./index.js').then(m => { const z=Array(10000).fill(0); const p=m.compress(z); const b=m.decompress(p); if(b.length!==10000) throw new Error('rt'); console.log('zrw public', p.length); })\""
+    "test": "node --test test/*.mjs && node -e \"import('./index.js').then(m => { const z=Array(10000).fill(0); const p=m.compress(z); const b=m.decompress(p); if(b.length!==10000) throw new Error('rt'); console.log('zrw public', p.length); })\""
   },
   "keywords": [
     "slid phi labs",
@@ -42,10 +42,6 @@
   "author": "Slid Phi Labs / ZeroRangeWave",
   "license": "SEE LICENSE IN LICENSE",
   "homepage": "https://www.slidphilabs.com",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ceedot-rock/zero-range-wave-compression.git"
-  },
   "funding": {
     "type": "individual",
     "url": "https://www.slidphilabs.com/api/agent"
@@ -69,18 +65,17 @@
     "site": "https://www.slidphilabs.com",
     "llms_txt": "https://www.slidphilabs.com/llms.txt",
     "agents_json": "https://www.slidphilabs.com/agents.json",
-    "one_liner": "Free first 1 GB suite \u00b7 then from $2 min \u00b7 ~3\u00a2/GB. GET https://www.slidphilabs.com/api/agent. Try Gate retired.",
+    "one_liner": "First 1 GB of input free (once per IP, lifetime), then $0.25/GB of input. GET https://www.slidphilabs.com/api/agent. Try Gate retired.",
     "agent_platform": {
       "cuni": "https://spl-cuni-studio.fly.dev/",
-      "agent_rider": "https://agentrider.fly.dev/",
-      "quikgater": "https://github.com/ceedot-rock/quikgater"
+      "agent_rider": "https://agentrider.fly.dev/"
     },
     "suite": "https://www.slidphilabs.com/pps",
     "suite_pricing": {
       "free_cap_gb": 1,
-      "min_paid_usd": 2,
-      "usd_per_gb_after_free": 0.03,
-      "usd_per_gb_bulk": 0.02,
+      "min_paid_usd": 1,
+      "usd_per_gb_after_free": 0.25,
+      "usd_per_gb_bulk": 0.25,
       "try_gate": "retired",
       "model": "freemium_suite_v3_money"
     },
